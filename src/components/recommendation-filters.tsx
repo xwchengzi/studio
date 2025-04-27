@@ -70,16 +70,19 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
    // Custom MultiSelect Component using Popover
    const MultiSelectFilter = ({ filterKey, label, options }: { filterKey: keyof MajorRecommendationFilter; label: string; options: string[] }) => {
        const selectedValues = (filters[filterKey] as string[] | undefined) || [];
+       const [isOpen, setIsOpen] = React.useState(false);
 
        const handleSelect = (option: string) => {
            const newValues = selectedValues.includes(option)
                ? selectedValues.filter((v) => v !== option)
                : [...selectedValues, option];
            handleMultiSelectChange(filterKey, newValues);
+           // Keep popover open for multi-selection
+           setIsOpen(true);
        };
 
        const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-           e.stopPropagation(); // Prevent popover from opening
+           e.stopPropagation(); // Prevent popover from opening/closing if badge is clicked
            e.preventDefault(); // Prevent default behavior
            const newValues = selectedValues.filter((v) => v !== valueToRemove);
            handleMultiSelectChange(filterKey, newValues);
@@ -94,65 +97,50 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
 
        return (
-           <div className="space-y-1">
+           <div className="space-y-1 flex flex-col">
                <Label htmlFor={filterKey as string} className="text-xs">{label}</Label>
-               <Popover>
+               <Popover open={isOpen} onOpenChange={setIsOpen}>
                     <PopoverTrigger asChild>
                        <Button
                            variant="outline"
                            role="combobox"
+                           aria-expanded={isOpen}
                            className={cn(
-                             "w-full justify-between font-normal h-auto min-h-9 text-xs px-3 py-1", // Adjusted height and padding
+                             "w-full justify-between font-normal h-9 text-xs px-3 py-1", // Adjusted height and padding
                              selectedValues.length === 0 && "text-muted-foreground"
                            )}
                        >
-                            <div className="flex flex-wrap gap-1 items-center flex-grow mr-1"> {/* Container for badges */}
-                               {selectedValues.length > 0 ? (
-                                   selectedValues.map((value) => (
-                                       <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs whitespace-nowrap">
-                                           {value}
-                                            {/* Changed button to div with role="button" */}
-                                           <div
-                                                role="button"
-                                                tabIndex={0} // Make it focusable
-                                                onClick={(e) => removeValue(e, value)}
-                                                onKeyDown={(e) => handleKeyDownRemove(e, value)}
-                                                className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
-                                                aria-label={`移除 ${value}`}
-                                            >
-                                                <X className="h-3 w-3" />
-                                           </div>
-                                       </Badge>
-                                   ))
-                               ) : (
-                                    <span className="truncate">选择{label}</span> // Placeholder
-                               )}
-                            </div>
+                            {/* Simplified Trigger Label */}
+                            <span className="truncate">
+                                {selectedValues.length > 0 ? `${selectedValues.length}项已选` : `选择${label}`}
+                            </span>
                            <ChevronDown className="h-3 w-3 shrink-0 opacity-50"/>
                        </Button>
                    </PopoverTrigger>
-                   <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start">
+                   <PopoverContent
+                        className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
+                        align="start"
+                        onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack
+                    >
                        <ScrollArea className="h-48">
                            <div className="p-1">
                                {options.map((option) => (
                                    <div
                                        key={option}
-                                       // Prevent focus shift on click which closes popover
-                                       onMouseDown={(e) => e.preventDefault()}
+                                       onMouseDown={(e) => e.preventDefault()} // Prevents popover close on item click start
+                                       onClick={() => handleSelect(option)} // Handle selection on click complete
                                        className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
                                    >
                                        <Checkbox
                                            id={`${filterKey as string}-${option}`}
                                            checked={selectedValues.includes(option)}
-                                           // Use onClick for checkbox interaction to trigger state update
-                                           onClick={() => handleSelect(option)}
                                            aria-labelledby={`${filterKey as string}-${option}-label`}
                                            className="h-3.5 w-3.5"
+                                           tabIndex={-1} // Make checkbox non-focusable
                                        />
                                        <label
                                             id={`${filterKey as string}-${option}-label`}
-                                            htmlFor={`${filterKey as string}-${option}`}
-                                            className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
+                                            className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none" // Added select-none
                                        >
                                            {option}
                                        </label>
@@ -162,6 +150,27 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                        </ScrollArea>
                    </PopoverContent>
                </Popover>
+               {/* Display selected items as badges below the trigger */}
+               {selectedValues.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                        {selectedValues.map((value) => (
+                            <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs whitespace-nowrap">
+                                {value}
+                                <div
+                                    role="button"
+                                    tabIndex={0} // Make it focusable
+                                    onMouseDown={(e) => e.preventDefault()} // Prevent focus loss
+                                    onClick={(e) => removeValue(e, value)}
+                                    onKeyDown={(e) => handleKeyDownRemove(e, value)}
+                                    className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                                    aria-label={`移除 ${value}`}
+                                >
+                                    <X className="h-3 w-3" />
+                                </div>
+                            </Badge>
+                        ))}
+                    </div>
+                )}
            </div>
        );
    };
@@ -189,22 +198,24 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
 
   return (
-    <div className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end', className)}> {/* Reduced gap */}
+    <div className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-4 items-start', className)}> {/* Adjusted gap and alignment */}
         <MultiSelectFilter filterKey="regions" label="地区" options={REGIONS} />
         <MultiSelectFilter filterKey="majorCategories" label="专业类别" options={MAJOR_CATEGORIES} />
         <SingleSelectFilter filterKey="schoolingLength" label="学制" options={SCHOOLING_LENGTHS} />
         <SingleSelectFilter filterKey="tuitionRange" label="学费范围" options={TUITION_RANGES} />
         <SingleSelectFilter filterKey="universityTier" label="院校层次" options={UNIVERSITY_TIERS} />
 
-        <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetFilters}
-            className="text-xs text-muted-foreground hover:text-foreground h-9 col-span-2 sm:col-span-1 mt-auto justify-self-end sm:justify-self-start" /* Adjusted alignment */
-         >
-            <X className="mr-1 h-3 w-3" />
-            清空筛选
-        </Button>
+        <div className="col-span-2 sm:col-span-1 flex items-end h-full"> {/* Wrapper for button alignment */}
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-xs text-muted-foreground hover:text-foreground h-9 mt-auto w-full sm:w-auto justify-self-end sm:justify-self-start" /* Adjusted alignment */
+             >
+                <X className="mr-1 h-3 w-3" />
+                清空筛选
+            </Button>
+        </div>
     </div>
   );
 }
