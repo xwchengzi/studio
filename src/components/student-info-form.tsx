@@ -52,8 +52,8 @@ export function StudentInfoForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: undefined,
-      provinceRanking: undefined,
+      gaokaoScore: '' as unknown as number, // Initialize with empty string
+      provinceRanking: '' as unknown as number, // Initialize with empty string
       selectedSubjects: [], // Default value for selected subjects
       intendedRegions: [],
       intendedMajorCategories: [],
@@ -115,7 +115,7 @@ export function StudentInfoForm() {
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-        e.stopPropagation(); // Prevent popover from opening
+        e.stopPropagation(); // Prevent popover from opening/closing if needed
         e.preventDefault(); // Prevent form submission if inside a form
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
@@ -176,17 +176,13 @@ export function StudentInfoForm() {
                     <div
                       key={option}
                       className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer"
-                      onClick={(e) => {
-                        // Stop propagation to prevent popover close when clicking the item area
-                        e.stopPropagation();
-                        handleSelect(option);
-                      }}
+                       // Let the checkbox handle the select logic, prevent div click from closing popover
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
                         id={`${field.name}-${option}`}
                         checked={selectedValues.includes(option)}
-                        // Prevent checkbox click from closing popover, let the div handle it
-                        // onClick={(e) => e.stopPropagation()}
+                        onCheckedChange={() => handleSelect(option)} // Use onCheckedChange for Checkbox
                         aria-labelledby={`${field.name}-${option}-label`}
                         disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)} // Disable if max reached and not selected
                       />
@@ -194,8 +190,8 @@ export function StudentInfoForm() {
                         id={`${field.name}-${option}-label`}
                         htmlFor={`${field.name}-${option}`}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
-                        // Prevent label click from closing popover, let the div handle it
-                        // onClick={(e) => e.stopPropagation()}
+                        // Click label to trigger checkbox
+                        onClick={() => handleSelect(option)}
                       >
                         {option}
                       </label>
