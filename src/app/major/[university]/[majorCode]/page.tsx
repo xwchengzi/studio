@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useEffect, useState, Suspense } from 'react';
@@ -106,6 +107,21 @@ function MajorDetailsPageContent() {
                     <Skeleton className="h-4 w-1/2" />
                     <Skeleton className="h-4 w-3/4" />
                      <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                     <Skeleton className="h-6 w-1/3" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
+                     <Skeleton className="h-4 w-full" />
                 </CardContent>
             </Card>
         </div>
@@ -228,6 +244,11 @@ function MajorDetailsPageContent() {
                         <AdmissionDataRow year={2024} score={majorDetails.admissionScore2024} ranking={majorDetails.admissionRanking2024} />
                         <AdmissionDataRow year={2023} score={majorDetails.admissionScore2023} ranking={majorDetails.admissionRanking2023} />
                         <AdmissionDataRow year={2022} score={majorDetails.admissionScore2022} ranking={majorDetails.admissionRanking2022} />
+                        <AdmissionDataRow year={2021} score={majorDetails.admissionScore2021} ranking={majorDetails.admissionRanking2021} />
+                        <AdmissionDataRow year={2020} score={majorDetails.admissionScore2020} ranking={majorDetails.admissionRanking2020} />
+                        <AdmissionDataRow year={2019} score={majorDetails.admissionScore2019} ranking={majorDetails.admissionRanking2019} />
+                        <AdmissionDataRow year={2018} score={majorDetails.admissionScore2018} ranking={majorDetails.admissionRanking2018} />
+                        <AdmissionDataRow year={2017} score={majorDetails.admissionScore2017} ranking={majorDetails.admissionRanking2017} />
                         <Separator className="mt-2 mb-2"/>
                          <div className="grid grid-cols-3 gap-2 text-sm py-1 font-semibold text-primary">
                              <div>2025预估</div>
@@ -259,3 +280,6 @@ function MajorDetailsLoading() {
         </main>
     );
 }
+
+
+    

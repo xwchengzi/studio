@@ -165,3 +165,6 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
     </div>
   );
 }
+
+
+    
