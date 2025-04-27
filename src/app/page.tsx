@@ -6,6 +6,7 @@ export default function Home() {
       <div className="w-full max-w-2xl">
         <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8 text-primary">
           <span>2025高考志愿填报</span>
+          {/* Updated font size class for the subtitle */}
           <span className="block text-xl sm:text-2xl font-normal text-muted-foreground mt-1">（浙江专版）</span>
         </h1>
         <StudentInfoForm />
