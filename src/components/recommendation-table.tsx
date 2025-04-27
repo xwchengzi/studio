@@ -38,7 +38,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
   };
 
   const SortableHeader = ({ columnKey, label, className }: { columnKey: SortKey, label: string, className?: string }) => (
-    <TableHead className={cn("cursor-pointer hover:bg-accent", className)} onClick={() => handleSort(columnKey)}>
+    <TableHead className={cn("cursor-pointer hover:bg-accent px-2 py-2 sm:px-4 sm:py-3", className)} onClick={() => handleSort(columnKey)}> {/* Adjusted padding */}
       <div className="flex items-center">
         {label}
         {sortKey === columnKey && (
@@ -103,7 +103,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
           placeholder="搜索专业名称、代码、院校或选科要求..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="w-full sm:max-w-sm" // Full width on small screens
         />
       </div>
        <div className="border rounded-lg overflow-x-auto shadow-sm">
@@ -111,31 +111,31 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
             <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>
                 <SortableHeader columnKey="majorName" label="专业名称" className="min-w-[150px] sticky left-0 bg-muted/50 z-10" />
-                <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[100px]" />
-                <SortableHeader columnKey="university" label="所属院校" className="min-w-[180px]" />
-                <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[120px]" />
-                <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[80px]" />
-                <SortableHeader columnKey="admissionRanking2024" label="24年位次" className="text-right min-w-[80px]" />
-                <SortableHeader columnKey="admissionScore2023" label="23年分数" className="text-right min-w-[80px]" />
-                <SortableHeader columnKey="admissionRanking2023" label="23年位次" className="text-right min-w-[80px]" />
-                 <SortableHeader columnKey="admissionScore2022" label="22年分数" className="text-right min-w-[80px]" />
-                <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[80px]" />
+                <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[110px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="admissionRanking2024" label="24年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="admissionScore2023" label="23年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="admissionRanking2023" label="23年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                 <SortableHeader columnKey="admissionScore2022" label="22年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
                 </TableRow>
             </TableHeader>
-            <TableBody className="text-sm">
+            <TableBody className="text-xs sm:text-sm"> {/* Smaller text on small screens */}
                 {sortedAndFilteredMajors.length > 0 ? (
                     sortedAndFilteredMajors.map((major, index) => (
                     <TableRow key={`${major.majorCode}-${major.university}-${index}`} className="hover:bg-accent/50">
-                        <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10">{major.majorName}</TableCell>
-                        <TableCell>{major.majorCode}</TableCell>
-                        <TableCell>{major.university}</TableCell>
-                        <TableCell>{major.subjectRequirements ?? '不详'}</TableCell>
-                        <TableCell className="text-right">{major.admissionScore2024 ?? '-'}</TableCell>
-                        <TableCell className="text-right">{major.admissionRanking2024 ?? '-'}</TableCell>
-                        <TableCell className="text-right">{major.admissionScore2023 ?? '-'}</TableCell>
-                        <TableCell className="text-right">{major.admissionRanking2023 ?? '-'}</TableCell>
-                         <TableCell className="text-right">{major.admissionScore2022 ?? '-'}</TableCell>
-                        <TableCell className="text-right">{major.admissionRanking2022 ?? '-'}</TableCell>
+                        <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.subjectRequirements ?? '不详'}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2024 ?? '-'}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2024 ?? '-'}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2023 ?? '-'}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2023 ?? '-'}</TableCell> {/* Adjusted padding */}
+                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2022 ?? '-'}</TableCell> {/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2022 ?? '-'}</TableCell> {/* Adjusted padding */}
                     </TableRow>
                     ))
                 ) : (

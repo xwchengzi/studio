@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,7 +43,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
 
   const handleMultiSelectChange = (key: keyof MajorRecommendationFilter, value: string[]) => {
-      const newFilters = { ...filters, [key]: value };
+      const newFilters = { ...filters, [key]: value.length > 0 ? value : undefined }; // Set to undefined if empty
       setFilters(newFilters);
       onFilterChange(newFilters);
   };
@@ -55,7 +55,12 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
    };
 
   const resetFilters = () => {
-    const resetState: MajorRecommendationFilter = {}; // Keep initial intended filters if needed, or clear all
+    // Reset to initial state derived from query params, not necessarily empty
+    const resetState: MajorRecommendationFilter = {
+        regions: initialFilters.regions,
+        majorCategories: initialFilters.majorCategories,
+        // Keep other fields undefined as they are not part of initial query
+    };
     setFilters(resetState);
     onFilterChange(resetState);
   };
@@ -79,7 +84,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
        return (
            <div className="space-y-1">
-               <Label htmlFor={filterKey as string}>{label}</Label>
+               <Label htmlFor={filterKey as string} className="text-xs">{label}</Label>
                <div className="flex flex-wrap gap-1 mb-1 min-h-[20px]">
                    {selectedValues.map((value) => (
                        <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs">
@@ -102,11 +107,13 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                            role="combobox"
                            className="w-full justify-between font-normal text-muted-foreground h-9 text-xs px-3"
                        >
-                           {selectedValues.length > 0 ? `${selectedValues.length} 已选择` : `选择${label}`}
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1 h-3 w-3 shrink-0 opacity-50"><path d="m6 9 6 6 6-6"/></svg>
+                           <span className="truncate"> {/* Added truncate */}
+                             {selectedValues.length > 0 ? `${selectedValues.length} 已选择` : `选择${label}`}
+                           </span>
+                           <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50"/>
                        </Button>
                    </PopoverTrigger>
-                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start"> {/* Added max-width */}
                        <ScrollArea className="h-48">
                            <div className="p-1">
                                {options.map((option) => (
@@ -140,13 +147,13 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
     const SingleSelectFilter = ({ filterKey, label, options }: { filterKey: keyof MajorRecommendationFilter; label: string; options: string[] }) => (
         <div className="space-y-1">
-            <Label htmlFor={filterKey as string}>{label}</Label>
+            <Label htmlFor={filterKey as string} className="text-xs">{label}</Label>
             <Select
                 value={(filters[filterKey] as string | undefined) ?? '全部'}
                 onValueChange={(value) => handleSingleSelectChange(filterKey, value)}
             >
                 <SelectTrigger id={filterKey as string} className="w-full h-9 text-xs px-3">
-                    <SelectValue placeholder={`选择${label}`} />
+                     <SelectValue placeholder={`选择${label}`} />
                 </SelectTrigger>
                 <SelectContent>
                     {options.map((option) => (
@@ -161,7 +168,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
 
   return (
-    <div className={cn('grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 items-end', className)}>
+    <div className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end', className)}> {/* Reduced gap */}
         <MultiSelectFilter filterKey="regions" label="地区" options={REGIONS} />
         <MultiSelectFilter filterKey="majorCategories" label="专业类别" options={MAJOR_CATEGORIES} />
         <SingleSelectFilter filterKey="schoolingLength" label="学制" options={SCHOOLING_LENGTHS} />
@@ -172,7 +179,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
             variant="ghost"
             size="sm"
             onClick={resetFilters}
-            className="text-xs text-muted-foreground hover:text-foreground h-9 col-start-2 sm:col-start-auto mt-auto"
+            className="text-xs text-muted-foreground hover:text-foreground h-9 col-span-2 sm:col-span-1 mt-auto justify-self-end sm:justify-self-start" /* Adjusted alignment */
          >
             <X className="mr-1 h-3 w-3" />
             清空筛选

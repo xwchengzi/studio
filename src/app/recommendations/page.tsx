@@ -160,12 +160,12 @@ function RecommendationsPageContent() {
   );
 
   return (
-    <main className="container mx-auto p-4 sm:p-6 md:p-8">
-      <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-6 group">
+    <main className="container mx-auto p-4 sm:p-6"> {/* Adjusted padding */}
+      <Button variant="outline" size="sm" onClick={() => router.push('/')} className="mb-4 sm:mb-6 group"> {/* Adjusted margin */}
          <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
          返回
       </Button>
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-primary">专业推荐结果</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-primary">专业推荐结果</h1>
 
       {isLoading ? (
         <LoadingSkeleton />
@@ -177,7 +177,7 @@ function RecommendationsPageContent() {
       ) : (
         <>
           {reasoning && (
-            <Alert className="mb-6 bg-secondary border-secondary-foreground/20">
+            <Alert className="mb-4 sm:mb-6 bg-secondary border-secondary-foreground/20"> {/* Adjusted margin */}
               <AlertTitle className="text-secondary-foreground font-semibold">智能分析</AlertTitle>
               <AlertDescription className="text-secondary-foreground/80">{reasoning}</AlertDescription>
             </Alert>
@@ -185,7 +185,7 @@ function RecommendationsPageContent() {
           <RecommendationFilters
             onFilterChange={handleFilterChange}
             initialFilters={initialFilters || {}} // Pass initial filters
-            className="mb-6 p-4 border rounded-lg shadow-sm bg-card"
+            className="mb-4 sm:mb-6 p-3 sm:p-4 border rounded-lg shadow-sm bg-card" /* Adjusted margin & padding */
           />
           <RecommendationTable majors={filteredMajors} />
         </>

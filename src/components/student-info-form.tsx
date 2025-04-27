@@ -24,7 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 
 // Mock data - replace with actual data fetching if needed
 const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '陕西', '山东', '河南'];
@@ -123,7 +123,7 @@ export function StudentInfoForm() {
         <FormLabel>{label} {maxSelection ? `(必须选择 ${maxSelection} 项)` : ''}</FormLabel>
          <div className="flex flex-wrap gap-1 mb-2 min-h-[26px]"> {/* Added min-height */}
             {selectedValues.map((value: string) => (
-                <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1">
+                <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs sm:text-sm">
                     {value}
                     <button
                         type="button"
@@ -144,15 +144,17 @@ export function StudentInfoForm() {
                 role="combobox"
                 className="w-full justify-between font-normal text-muted-foreground"
               >
-                 {selectedValues.length > 0
-                    ? `${selectedValues.length} / ${maxSelection ?? options.length} 已选择`
-                    : `请选择${label}`
-                 }
-                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 h-4 w-4 shrink-0 opacity-50"><path d="m6 9 6 6 6-6"/></svg>
+                 <span className="truncate"> {/* Added truncate */}
+                   {selectedValues.length > 0
+                      ? `${selectedValues.length} / ${maxSelection ?? options.length} 已选择`
+                      : `请选择${label}`
+                   }
+                 </span>
+                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start"> {/* Added max-width */}
              <ScrollArea className="h-60">
                 <div className="p-2">
                   {options.map((option) => (
