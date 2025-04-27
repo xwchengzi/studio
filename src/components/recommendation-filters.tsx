@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge'; // Badge is still needed for internal logic if removing items was linked
+// Badge removed as it's not used for display anymore
 
 // Mock data - replace with actual data fetching or constants
 const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '陕西', '山东', '河南'];
@@ -80,22 +80,6 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
            // Keep popover open for multi-selection
            setIsOpen(true);
        };
-
-       // This function is no longer needed as badges are removed
-       // const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-       //     e.stopPropagation(); // Prevent popover from opening/closing if badge is clicked
-       //     e.preventDefault(); // Prevent default behavior
-       //     const newValues = selectedValues.filter((v) => v !== valueToRemove);
-       //     handleMultiSelectChange(filterKey, newValues);
-       // }
-
-        // This handler is no longer needed
-        // const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
-        //     if (e.key === 'Enter' || e.key === ' ') {
-        //         removeValue(e, valueToRemove);
-        //     }
-        // };
-
 
        return (
            <div className="space-y-1 flex flex-col">
@@ -179,7 +163,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
 
 
   return (
-    <div className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-4 items-start', className)}> {/* Adjusted gap and alignment */}
+    <div className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-4 items-end', className)}> {/* Changed items-start to items-end */}
         <MultiSelectFilter filterKey="regions" label="地区" options={REGIONS} />
         <MultiSelectFilter filterKey="majorCategories" label="专业类别" options={MAJOR_CATEGORIES} />
         <SingleSelectFilter filterKey="schoolingLength" label="学制" options={SCHOOLING_LENGTHS} />
