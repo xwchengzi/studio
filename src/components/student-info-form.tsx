@@ -35,19 +35,20 @@ const MAJOR_CATEGORIES = [
 const SUBJECTS = ['政治', '历史', '地理', '物理', '化学', '生物', '技术'];
 
 const formSchema = z.object({
-  gaokaoScore: z.coerce.number().min(0, '分数不能为负').max(750, '分数不能超过750').optional().or(z.literal('')), // Allow empty string initially
-  provinceRanking: z.coerce.number().int('排名必须是整数').min(1, '排名必须大于0').optional().or(z.literal('')), // Allow empty string initially
+  // Use coerce.number and set required_error. Remove optional/or/refine.
+  gaokaoScore: z.coerce
+    .number({ invalid_type_error: '请输入有效分数', required_error: '请输入高考分数' })
+    .min(0, '分数不能为负')
+    .max(750, '分数不能超过750'),
+  provinceRanking: z.coerce
+    .number({ invalid_type_error: '请输入有效排名', required_error: '请输入所在位次' })
+    .int('排名必须是整数')
+    .min(1, '排名必须大于0'),
   selectedSubjects: z.array(z.string()).length(3, '必须选择 3 个科目'), // Added field for selected subjects
   intendedRegions: z.array(z.string()).optional(),
   intendedMajorCategories: z.array(z.string()).optional(),
   excludedRegions: z.array(z.string()).optional(),
   excludedMajorCategories: z.array(z.string()).optional(),
-}).refine(data => data.gaokaoScore !== '', { // Ensure gaokaoScore is not submitted as empty string
-    message: "高考分数不能为空",
-    path: ["gaokaoScore"],
-}).refine(data => data.provinceRanking !== '', { // Ensure provinceRanking is not submitted as empty string
-    message: "所在位次不能为空",
-    path: ["provinceRanking"],
 });
 
 
@@ -59,8 +60,8 @@ export function StudentInfoForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: 500, // Default score to 500
-      provinceRanking: 10000, // Default ranking to 10000
+      gaokaoScore: '', // Start empty, rely on placeholder
+      provinceRanking: '', // Start empty, rely on placeholder
       selectedSubjects: [], // Default value for selected subjects
       intendedRegions: [],
       intendedMajorCategories: [],
@@ -70,15 +71,9 @@ export function StudentInfoForm() {
   });
 
   function onSubmit(values: FormData) {
-    // Ensure default values are used if fields were cleared and submitted
-    const finalValues = {
-        ...values,
-        gaokaoScore: values.gaokaoScore === '' ? 500 : Number(values.gaokaoScore),
-        provinceRanking: values.provinceRanking === '' ? 10000 : Number(values.provinceRanking),
-    };
-
-
-    console.log('Form submitted:', finalValues);
+    // No need to force default values here, validation handles required fields
+    // values will contain numbers due to z.coerce.number
+    console.log('Form submitted:', values);
     toast({
       title: '正在提交信息...',
       description: '正在为您生成推荐，请稍候。',
@@ -86,22 +81,22 @@ export function StudentInfoForm() {
 
     // Construct query params
     const params = new URLSearchParams();
-    params.set('gaokaoScore', finalValues.gaokaoScore.toString());
-    params.set('provinceRanking', finalValues.provinceRanking.toString());
-    if (finalValues.selectedSubjects && finalValues.selectedSubjects.length > 0) {
-        params.set('selectedSubjects', finalValues.selectedSubjects.join(',')); // Add selected subjects
+    params.set('gaokaoScore', values.gaokaoScore.toString());
+    params.set('provinceRanking', values.provinceRanking.toString());
+    if (values.selectedSubjects && values.selectedSubjects.length > 0) {
+        params.set('selectedSubjects', values.selectedSubjects.join(',')); // Add selected subjects
     }
-    if (finalValues.intendedRegions && finalValues.intendedRegions.length > 0) {
-      params.set('intendedRegions', finalValues.intendedRegions.join(','));
+    if (values.intendedRegions && values.intendedRegions.length > 0) {
+      params.set('intendedRegions', values.intendedRegions.join(','));
     }
-    if (finalValues.intendedMajorCategories && finalValues.intendedMajorCategories.length > 0) {
-      params.set('intendedMajorCategories', finalValues.intendedMajorCategories.join(','));
+    if (values.intendedMajorCategories && values.intendedMajorCategories.length > 0) {
+      params.set('intendedMajorCategories', values.intendedMajorCategories.join(','));
     }
-    if (finalValues.excludedRegions && finalValues.excludedRegions.length > 0) {
-      params.set('excludedRegions', finalValues.excludedRegions.join(','));
+    if (values.excludedRegions && values.excludedRegions.length > 0) {
+      params.set('excludedRegions', values.excludedRegions.join(','));
     }
-     if (finalValues.excludedMajorCategories && finalValues.excludedMajorCategories.length > 0) {
-      params.set('excludedMajorCategories', finalValues.excludedMajorCategories.join(','));
+     if (values.excludedMajorCategories && values.excludedMajorCategories.length > 0) {
+      params.set('excludedMajorCategories', values.excludedMajorCategories.join(','));
     }
 
     router.push(`/recommendations?${params.toString()}`);
@@ -128,8 +123,12 @@ export function StudentInfoForm() {
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
-       // Keep popover open after selection
-      // setIsOpen(true); // This line might be causing issues, let's remove it for now. Popover should handle its state.
+      // Keep popover open if within maxSelection limit or removing an item
+      if (!maxSelection || newValues.length < maxSelection || selectedValues.includes(option)) {
+          setIsOpen(true);
+      } else {
+          setIsOpen(false); // Close popover if max selection is reached on adding an item
+      }
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
@@ -137,6 +136,7 @@ export function StudentInfoForm() {
         e.preventDefault(); // Prevent default behavior
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
+        setIsOpen(true); // Keep open after removing
     }
 
     // Handle keyboard interaction for removing items
@@ -193,14 +193,6 @@ export function StudentInfoForm() {
               className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
               align="start"
               onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack
-              // onInteractOutside={(e) => {
-              // // Allow interaction within the trigger button itself
-              // if (e.target instanceof Element && e.target.closest('[role="combobox"]')) {
-              //   e.preventDefault();
-              // }
-              // // Allow interaction with checkbox items
-              // // No explicit prevention needed here, default behavior is usually okay
-              // }}
           >
              <ScrollArea className="h-60">
                 <div className="p-2">
@@ -209,7 +201,11 @@ export function StudentInfoForm() {
                       key={option}
                       onMouseDown={(e) => e.preventDefault()} // Prevents popover close on item click start
                       onClick={() => handleSelect(option)} // Handle selection on click complete
-                      className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer"
+                      className={cn(
+                        "flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer",
+                        (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "opacity-50 cursor-not-allowed"
+                      )}
+
                     >
                       <Checkbox
                         id={`${field.name}-${option}`}
@@ -222,7 +218,10 @@ export function StudentInfoForm() {
                       <label
                         id={`${field.name}-${option}-label`}
                         // htmlFor removed as Checkbox is not directly interactive via label
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none" // Added select-none
+                        className={cn(
+                          "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none",
+                          (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "cursor-not-allowed"
+                          )} // Added select-none
                       >
                         {option}
                       </label>
@@ -249,7 +248,7 @@ export function StudentInfoForm() {
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
                      {/* Use field.value directly, handle potential empty string */}
-                    <Input type="number" placeholder="请输入您的分数" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="例如: 500" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -263,7 +262,7 @@ export function StudentInfoForm() {
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
                     {/* Use field.value directly, handle potential empty string */}
-                    <Input type="number" placeholder="请输入您的排名" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="例如: 10000" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
