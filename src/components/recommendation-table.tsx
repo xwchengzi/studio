@@ -26,7 +26,7 @@ type SortDirection = 'asc' | 'desc';
 
 export function RecommendationTable({ majors }: RecommendationTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortKey, setSortKey] = useState<SortKey>('admissionRanking2024'); // Default sort by 24年位次
+  const [sortKey, setSortKey] = useState<SortKey>('estimatedRanking2025'); // Default sort by 25年预估位次
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc'); // Default sort ascending
 
   const handleSort = (key: SortKey) => {
@@ -115,6 +115,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                     <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" />
                     <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" />
                     <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[110px]" />
+                    <SortableHeader columnKey="estimatedRanking2025" label="25年预估位次" className="text-right min-w-[90px]" />
                     <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[70px]" />
                     <SortableHeader columnKey="admissionRanking2024" label="24年位次" className="text-right min-w-[70px]" />
                     <SortableHeader columnKey="admissionScore2023" label="23年分数" className="text-right min-w-[70px]" />
@@ -131,6 +132,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell>{/* Adjusted padding */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell>{/* Adjusted padding */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.subjectRequirements ?? '不详'}</TableCell>{/* Adjusted padding */}
+                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.estimatedRanking2025 ?? '-'}</TableCell>{/* Adjusted padding */}
                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2024 ?? '-'}</TableCell>{/* Adjusted padding */}
                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2024 ?? '-'}</TableCell>{/* Adjusted padding */}
                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2023 ?? '-'}</TableCell>{/* Adjusted padding */}
@@ -141,7 +143,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                     ))
                 ) : (
                     <TableRow>{/* Start TableRow for Empty State */}
-                        <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+                        <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                             {searchTerm ? '未找到匹配的专业。' : '暂无符合条件的推荐数据。'}
                         </TableCell>
                     </TableRow>/* End TableRow for Empty State */
