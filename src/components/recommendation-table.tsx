@@ -14,9 +14,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown, CheckCircle, HelpCircle, XCircle } from 'lucide-react'; // Import icons for probability
+import { ArrowUpDown, Percent } from 'lucide-react'; // Import Percent icon
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // Import Badge
+import { Progress } from '@/components/ui/progress'; // Import Progress
 
 interface RecommendationTableProps {
   majors: Major[];
@@ -29,14 +30,15 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
   const router = useRouter(); // Initialize useRouter
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('admissionProbability'); // Default sort by probability
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc'); // Default sort ascending
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc'); // Default sort descending (higher probability first)
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortKey(key);
-      setSortDirection('asc');
+      // Default to descending for probability, ascending for others
+      setSortDirection(key === 'admissionProbability' ? 'desc' : 'asc');
     }
   };
 
@@ -59,35 +61,26 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
     </TableHead>
   );
 
-   const ProbabilityBadge = ({ probability }: { probability: Major['admissionProbability'] }) => {
-       if (!probability) return <span className="text-muted-foreground">-</span>;
+   const ProbabilityDisplay = ({ probability }: { probability: Major['admissionProbability'] }) => {
+       if (probability === null || probability === undefined) {
+         return <span className="text-muted-foreground text-xs">-</span>;
+       }
 
-       let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'secondary';
-       let icon = HelpCircle;
-       let text = probability;
-
-       switch (probability) {
-           case '高':
-               variant = 'default'; // Use primary color for high probability
-               icon = CheckCircle;
-               break;
-           case '中':
-                variant = 'secondary'; // Keep secondary for medium
-               icon = HelpCircle;
-               break;
-           case '低':
-               variant = 'destructive'; // Use destructive for low probability
-               icon = XCircle;
-               break;
+        // Determine color based on probability value
+       const getProgressColor = (value: number) => {
+            if (value >= 85) return 'bg-green-600'; // High probability - Green
+            if (value >= 60) return 'bg-yellow-500'; // Medium probability - Yellow
+            return 'bg-red-600'; // Low probability - Red
        }
 
        return (
-           <Badge variant={variant} className="flex items-center gap-1 w-fit mx-auto sm:mx-0">
-                <icon className="h-3 w-3" />
-               {text}
-           </Badge>
+            <div className="flex items-center gap-2 min-w-[100px]">
+                 <Progress value={probability} className={cn("h-2 w-12 sm:w-16", getProgressColor(probability))} />
+                 <span className="text-xs font-medium tabular-nums w-8 text-right">{probability}%</span>
+            </div>
        );
    };
+
 
   const sortedAndFilteredMajors = useMemo(() => {
     let filtered = majors;
@@ -101,8 +94,8 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
     }
 
     if (sortKey) {
-       // Custom sort for probability
-        const probabilityOrder: Record<string, number> = { '高': 1, '中': 2, '低': 3 };
+       // Custom sort for probability (now numerical)
+       // const probabilityOrder: Record<string, number> = { '高': 1, '中': 2, '低': 3 }; // Removed
 
       // Create a copy before sorting to avoid mutating the original array directly
        filtered = [...filtered].sort((a, b) => {
@@ -114,12 +107,13 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
            if (aValue === null || aValue === undefined) return nullOrder;
            if (bValue === null || bValue === undefined) return -nullOrder;
 
-           // Sort by probability
+           // Sort by probability (now numerical)
            if (sortKey === 'admissionProbability') {
-                const aProb = probabilityOrder[aValue as string] ?? 99;
-                const bProb = probabilityOrder[bValue as string] ?? 99;
-                return sortDirection === 'asc' ? aProb - bProb : bProb - aProb;
+                // Direct numerical comparison
+                return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
            }
+           // --- End probability sort ---
+
 
            if (typeof aValue === 'number' && typeof bValue === 'number') {
               return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -157,9 +151,8 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
             <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>{/* Start TableRow for Header */}
                     <SortableHeader columnKey="majorName" label="专业名称" className="min-w-[150px] sticky left-0 bg-muted/50 z-10" />
-                    {/* Removed majorCode: <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" /> */}
                     <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" />
-                     <SortableHeader columnKey="admissionProbability" label="录取概率" className="min-w-[90px] text-center sm:text-left" />
+                    <SortableHeader columnKey="admissionProbability" label="录取概率" className="min-w-[120px] sm:text-left" />
                     <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[110px]" />
                     <SortableHeader columnKey="estimatedRanking2025" label="25年预估位次" className="text-right min-w-[90px]" />
                     <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[70px]" />
@@ -179,10 +172,9 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                       onClick={() => handleRowClick(major)} // Added onClick handler
                     >
                         <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell>{/* Adjusted padding */}
-                        {/* Removed majorCode cell: <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell> */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell>{/* Adjusted padding */}
-                         <TableCell className="text-center sm:text-left px-2 py-2 sm:px-4 sm:py-4"> {/* Added probability cell */}
-                             <ProbabilityBadge probability={major.admissionProbability} />
+                         <TableCell className="sm:text-left px-2 py-2 sm:px-4 sm:py-4"> {/* Added probability cell */}
+                             <ProbabilityDisplay probability={major.admissionProbability} />
                         </TableCell>
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.subjectRequirements ?? '不详'}</TableCell>{/* Adjusted padding */}
                          <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.estimatedRanking2025 ?? '-'}</TableCell>{/* Adjusted padding */}
@@ -197,7 +189,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                 ) : (
                     <TableRow>
                         {/* Adjusted colSpan */}
-                        <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
+                        <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                             {searchTerm ? '未找到匹配的专业。' : '暂无符合条件的推荐数据。'}
                         </TableCell>
                     </TableRow>
@@ -208,3 +200,4 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
     </div>
   );
 }
+
