@@ -1,14 +1,14 @@
 
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Major, getMajorRecommendations, MajorRecommendationFilter } from '@/services/major-recommendation';
 // Removed AI import: import { generatePersonalizedRecommendations, GeneratePersonalizedRecommendationsInput } from '@/ai/flows/generate-personalized-recommendations';
 import { RecommendationTable } from '@/components/recommendation-table';
 import { RecommendationFilters } from '@/components/recommendation-filters';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Info } from 'lucide-react'; // Added Info icon
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -22,19 +22,41 @@ function RecommendationsPageContent() {
   // Removed AI reasoning state: const [reasoning, setReasoning] = useState<string | null>(null);
   const [initialFilters, setInitialFilters] = useState<MajorRecommendationFilter | null>(null);
 
+  // Memoize parsed search parameters
+  const parsedParams = useMemo(() => {
+    const gaokaoScore = searchParams.get('gaokaoScore');
+    const provinceRanking = searchParams.get('provinceRanking');
+    const selectedSubjects = searchParams.get('selectedSubjects')?.split(',') || [];
+    const intendedRegions = searchParams.get('intendedRegions')?.split(',') || [];
+    const intendedMajorCategories = searchParams.get('intendedMajorCategories')?.split(',') || [];
+    const excludedRegions = searchParams.get('excludedRegions')?.split(',') || [];
+    const excludedMajorCategories = searchParams.get('excludedMajorCategories')?.split(',') || [];
+    return {
+      gaokaoScore,
+      provinceRanking,
+      selectedSubjects,
+      intendedRegions,
+      intendedMajorCategories,
+      excludedRegions,
+      excludedMajorCategories,
+    };
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       // Removed: setReasoning(null);
 
-      const gaokaoScore = searchParams.get('gaokaoScore');
-      const provinceRanking = searchParams.get('provinceRanking');
-      const selectedSubjects = searchParams.get('selectedSubjects')?.split(',') || []; // Read selected subjects
-      const intendedRegions = searchParams.get('intendedRegions')?.split(',') || [];
-      const intendedMajorCategories = searchParams.get('intendedMajorCategories')?.split(',') || [];
-      const excludedRegions = searchParams.get('excludedRegions')?.split(',') || []; // Keep for potential future use? Or remove if unused?
-      const excludedMajorCategories = searchParams.get('excludedMajorCategories')?.split(',') || []; // Keep for potential future use? Or remove if unused?
+      const {
+        gaokaoScore,
+        provinceRanking,
+        selectedSubjects,
+        intendedRegions,
+        intendedMajorCategories,
+        // excludedRegions and excludedMajorCategories are read in parsedParams but not used for initial fetch filter
+      } = parsedParams;
+
 
       // Basic validation still useful
       if (!gaokaoScore || !provinceRanking) {
@@ -54,24 +76,25 @@ function RecommendationsPageContent() {
       const initialFilterData: MajorRecommendationFilter = {
         regions: intendedRegions.length > 0 ? intendedRegions : undefined,
         majorCategories: intendedMajorCategories.length > 0 ? intendedMajorCategories : undefined,
+        // Initialize other filters based on default values or leave undefined
       };
       setInitialFilters(initialFilterData);
 
 
       try {
         // Use the mock service directly
-        const filter: MajorRecommendationFilter = {
-          regions: initialFilterData.regions,
-          majorCategories: initialFilterData.majorCategories,
-          // Other filters will be applied client-side by RecommendationFilters
-        };
-        // Fetch initial list based on form intentions (regions/categories)
-        const recommendedMajors = await getMajorRecommendations(filter);
+        // Fetch initial list based ONLY on form intentions (regions/categories)
+        // Further filtering (tuition, tier, etc.) is done client-side via RecommendationFilters
+        const recommendedMajors = await getMajorRecommendations({
+            regions: initialFilterData.regions,
+            majorCategories: initialFilterData.majorCategories,
+        });
 
-        // Optional: Client-side subject compatibility check (can be complex)
+        // Client-side subject compatibility check (Placeholder)
          const compatibleMockMajors = recommendedMajors.filter(major =>
              // Placeholder: Implement checkSubjectCompatibility(selectedSubjects, major.subjectRequirements) if needed
-             true // Assuming compatibility or skipping check for now
+             // For now, assume all fetched majors are compatible or the requirements are just informational
+             true // Example: checkSubjectCompatibility(selectedSubjects, major.subjectRequirements)
          );
 
         setMajors(compatibleMockMajors);
@@ -86,7 +109,7 @@ function RecommendationsPageContent() {
     };
 
     fetchData();
-  }, [searchParams]);
+  }, [parsedParams]); // Depend on memoized params
 
   const handleFilterChange = (filters: MajorRecommendationFilter) => {
       // Client-side filtering based on all filter criteria from RecommendationFilters component
@@ -118,11 +141,64 @@ function RecommendationsPageContent() {
        if (filters.universityTier && filters.universityTier !== '全部') {
           tempMajors = tempMajors.filter(major => major.universityTier === filters.universityTier);
        }
-        // Add filtering based on subject requirements if needed client-side (though ideally done earlier)
-        // e.g., if filter includes subject criteria
+       // Client-side subject compatibility check (if needed based on filters)
+       // This part depends on how `checkSubjectCompatibility` would work if implemented
+       // const { selectedSubjects } = parsedParams; // Get subjects
+       // tempMajors = tempMajors.filter(major => checkSubjectCompatibility(selectedSubjects, major.subjectRequirements));
+
 
       setFilteredMajors(tempMajors);
   };
+
+  // Construct the dynamic alert message
+  const alertDescription = useMemo(() => {
+    const {
+      gaokaoScore,
+      provinceRanking,
+      selectedSubjects,
+      intendedRegions,
+      intendedMajorCategories,
+      excludedRegions,
+      excludedMajorCategories,
+    } = parsedParams;
+
+    let message = `根据考生${gaokaoScore ?? '未知'}分、全省排名${provinceRanking ?? '未知'}`;
+
+    if (selectedSubjects.length > 0) {
+      message += `，选考科目为 ${selectedSubjects.join('、')}`;
+    } else {
+      message += '，未指定选考科目';
+    }
+
+    if (intendedRegions.length > 0) {
+      message += `，意向地区为 ${intendedRegions.join('、')}`;
+    } else {
+       message += '，未指定意向地区';
+    }
+
+    if (intendedMajorCategories.length > 0) {
+      message += `，意向专业类别为 ${intendedMajorCategories.join('、')}`;
+    } else {
+        message += '，未指定意向专业类别';
+    }
+
+    const exclusions = [];
+    if (excludedRegions.length > 0) {
+        exclusions.push(`地区 ${excludedRegions.join('、')}`);
+    }
+    if (excludedMajorCategories.length > 0) {
+         exclusions.push(`专业类别 ${excludedMajorCategories.join('、')}`);
+    }
+
+    if (exclusions.length > 0) {
+        message += `，排除了 ${exclusions.join(' 和 ')}`;
+    }
+
+    message += ' 等信息，进行如下推荐。同时，您可以使用下方的筛选栏进一步精确查找。';
+
+    return message;
+  }, [parsedParams]);
+
 
   const LoadingSkeleton = () => (
     <div className="space-y-4">
@@ -155,11 +231,12 @@ function RecommendationsPageContent() {
         </Alert>
       ) : (
         <>
-          {/* Static Info Alert - Replacing AI Reasoning */}
+          {/* Dynamic Info Alert */}
           <Alert className="mb-4 sm:mb-6 bg-secondary border-secondary-foreground/20">
-              <AlertTitle className="text-secondary-foreground font-semibold">提示</AlertTitle>
+               <Info className="h-4 w-4 !left-4 !top-4 text-secondary-foreground/80" /> {/* Use Info icon */}
+              <AlertTitle className="text-secondary-foreground font-semibold">推荐依据</AlertTitle>
               <AlertDescription className="text-secondary-foreground/80">
-                以下是根据您在上一页输入的意向筛选出的专业列表。您可以使用下方的筛选栏进一步精确查找。
+                {alertDescription}
               </AlertDescription>
           </Alert>
 
