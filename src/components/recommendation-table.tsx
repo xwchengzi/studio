@@ -123,8 +123,9 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                     <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[70px]" />
                 </TableRow>
             </TableHeader>
-            <TableBody className="text-xs sm:text-sm">{/* Smaller text on small screens - No whitespace before children */}
-              {sortedAndFilteredMajors.length > 0 ? (sortedAndFilteredMajors.map((major, index) => (
+            <TableBody className="text-xs sm:text-sm">
+              {sortedAndFilteredMajors.length > 0 ? (
+                sortedAndFilteredMajors.map((major, index) => (
                     <TableRow key={`${major.majorCode}-${major.university}-${index}`} className="hover:bg-accent/50">
                         <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell> {/* Adjusted padding */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell> {/* Adjusted padding */}
