@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/badge'; // Badge is still needed for internal logic if removing items was linked
 
 // Mock data - replace with actual data fetching or constants
 const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '陕西', '山东', '河南'];
@@ -81,19 +81,20 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
            setIsOpen(true);
        };
 
-       const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-           e.stopPropagation(); // Prevent popover from opening/closing if badge is clicked
-           e.preventDefault(); // Prevent default behavior
-           const newValues = selectedValues.filter((v) => v !== valueToRemove);
-           handleMultiSelectChange(filterKey, newValues);
-       }
+       // This function is no longer needed as badges are removed
+       // const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
+       //     e.stopPropagation(); // Prevent popover from opening/closing if badge is clicked
+       //     e.preventDefault(); // Prevent default behavior
+       //     const newValues = selectedValues.filter((v) => v !== valueToRemove);
+       //     handleMultiSelectChange(filterKey, newValues);
+       // }
 
-        // Handle keyboard interaction for removing items
-        const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                removeValue(e, valueToRemove);
-            }
-        };
+        // This handler is no longer needed
+        // const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
+        //     if (e.key === 'Enter' || e.key === ' ') {
+        //         removeValue(e, valueToRemove);
+        //     }
+        // };
 
 
        return (
@@ -150,27 +151,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                        </ScrollArea>
                    </PopoverContent>
                </Popover>
-               {/* Display selected items as badges below the trigger */}
-               {selectedValues.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                        {selectedValues.map((value) => (
-                            <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs whitespace-nowrap">
-                                {value}
-                                <div
-                                    role="button"
-                                    tabIndex={0} // Make it focusable
-                                    onMouseDown={(e) => e.preventDefault()} // Prevent focus loss
-                                    onClick={(e) => removeValue(e, value)}
-                                    onKeyDown={(e) => handleKeyDownRemove(e, value)}
-                                    className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
-                                    aria-label={`移除 ${value}`}
-                                >
-                                    <X className="h-3 w-3" />
-                                </div>
-                            </Badge>
-                        ))}
-                    </div>
-                )}
+               {/* Removed the section displaying selected items as badges */}
            </div>
        );
    };
