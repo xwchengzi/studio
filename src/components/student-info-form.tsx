@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -17,13 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -37,10 +31,12 @@ const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '�
 const MAJOR_CATEGORIES = [
   '哲学', '经济学', '法学', '教育学', '文学', '历史学', '理学', '工学', '农学', '医学', '军事学', '管理学', '艺术学'
 ];
+const SUBJECTS = ['政治', '历史', '地理', '物理', '化学', '生物', '技术'];
 
 const formSchema = z.object({
   gaokaoScore: z.coerce.number().min(0, '分数不能为负').max(750, '分数不能超过750'),
   provinceRanking: z.coerce.number().int('排名必须是整数').min(1, '排名必须大于0'),
+  selectedSubjects: z.array(z.string()).length(3, '必须选择 3 个科目'), // Added field for selected subjects
   intendedRegions: z.array(z.string()).optional(),
   intendedMajorCategories: z.array(z.string()).optional(),
   excludedRegions: z.array(z.string()).optional(),
@@ -57,6 +53,7 @@ export function StudentInfoForm() {
     defaultValues: {
       gaokaoScore: undefined,
       provinceRanking: undefined,
+      selectedSubjects: [], // Default value for selected subjects
       intendedRegions: [],
       intendedMajorCategories: [],
       excludedRegions: [],
@@ -75,6 +72,9 @@ export function StudentInfoForm() {
     const params = new URLSearchParams();
     params.set('gaokaoScore', values.gaokaoScore.toString());
     params.set('provinceRanking', values.provinceRanking.toString());
+    if (values.selectedSubjects && values.selectedSubjects.length > 0) {
+        params.set('selectedSubjects', values.selectedSubjects.join(',')); // Add selected subjects
+    }
     if (values.intendedRegions && values.intendedRegions.length > 0) {
       params.set('intendedRegions', values.intendedRegions.join(','));
     }
@@ -92,13 +92,24 @@ export function StudentInfoForm() {
   }
 
   // Custom MultiSelect Component using Popover
-  const MultiSelectField = ({ field, label, options }: { field: any; label: string; options: string[] }) => {
+  const MultiSelectField = ({ field, label, options, maxSelection }: { field: any; label: string; options: string[], maxSelection?: number }) => {
     const selectedValues = field.value || [];
 
     const handleSelect = (option: string) => {
-      const newValues = selectedValues.includes(option)
-        ? selectedValues.filter((v: string) => v !== option)
-        : [...selectedValues, option];
+      let newValues;
+      if (selectedValues.includes(option)) {
+          newValues = selectedValues.filter((v: string) => v !== option);
+      } else {
+          if (maxSelection && selectedValues.length >= maxSelection) {
+             toast({
+                 title: `最多只能选择 ${maxSelection} 项`,
+                 variant: 'destructive',
+                 duration: 3000,
+             });
+              return; // Prevent adding more than maxSelection
+          }
+          newValues = [...selectedValues, option];
+      }
       field.onChange(newValues);
     };
 
@@ -109,8 +120,8 @@ export function StudentInfoForm() {
 
     return (
       <FormItem>
-        <FormLabel>{label}</FormLabel>
-         <div className="flex flex-wrap gap-1 mb-2">
+        <FormLabel>{label} {maxSelection ? `(必须选择 ${maxSelection} 项)` : ''}</FormLabel>
+         <div className="flex flex-wrap gap-1 mb-2 min-h-[26px]"> {/* Added min-height */}
             {selectedValues.map((value: string) => (
                 <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1">
                     {value}
@@ -133,7 +144,10 @@ export function StudentInfoForm() {
                 role="combobox"
                 className="w-full justify-between font-normal text-muted-foreground"
               >
-                {selectedValues.length > 0 ? `${selectedValues.length} 已选择` : `请选择${label}`}
+                 {selectedValues.length > 0
+                    ? `${selectedValues.length} / ${maxSelection ?? options.length} 已选择`
+                    : `请选择${label}`
+                 }
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 h-4 w-4 shrink-0 opacity-50"><path d="m6 9 6 6 6-6"/></svg>
               </Button>
             </FormControl>
@@ -152,6 +166,7 @@ export function StudentInfoForm() {
                         checked={selectedValues.includes(option)}
                         onCheckedChange={() => handleSelect(option)}
                         onClick={(e) => e.stopPropagation()} // Prevent triggering div click again
+                        disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)} // Disable if max reached and not selected
                       />
                       <label
                         htmlFor={`${field.name}-${option}`}
@@ -202,6 +217,16 @@ export function StudentInfoForm() {
             )}
             />
         </div>
+
+         <Separator />
+
+          <FormField
+              control={form.control}
+              name="selectedSubjects"
+              render={({ field }) => (
+                  <MultiSelectField field={field} label="选考科目" options={SUBJECTS} maxSelection={3} />
+              )}
+          />
 
          <Separator />
 

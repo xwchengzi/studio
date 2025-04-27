@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -29,6 +30,7 @@ function RecommendationsPageContent() {
 
       const gaokaoScore = searchParams.get('gaokaoScore');
       const provinceRanking = searchParams.get('provinceRanking');
+      const selectedSubjects = searchParams.get('selectedSubjects')?.split(',') || []; // Read selected subjects
       const intendedRegions = searchParams.get('intendedRegions')?.split(',') || [];
       const intendedMajorCategories = searchParams.get('intendedMajorCategories')?.split(',') || [];
       const excludedRegions = searchParams.get('excludedRegions')?.split(',') || [];
@@ -39,10 +41,17 @@ function RecommendationsPageContent() {
         setIsLoading(false);
         return;
       }
+       if (selectedSubjects.length !== 3) { // Validate subject count
+           setError('必须选择 3 个选考科目。');
+           setIsLoading(false);
+           return;
+       }
+
 
       const input: GeneratePersonalizedRecommendationsInput = {
         gaokaoScore: parseInt(gaokaoScore, 10),
         provinceRanking: parseInt(provinceRanking, 10),
+        selectedSubjects: selectedSubjects, // Pass selected subjects to AI input
         intendedRegions: intendedRegions.length > 0 ? intendedRegions : undefined,
         intendedMajorCategories: intendedMajorCategories.length > 0 ? intendedMajorCategories : undefined,
         excludedRegions: excludedRegions.length > 0 ? excludedRegions : undefined,
@@ -62,26 +71,38 @@ function RecommendationsPageContent() {
          // Assuming aiResult.recommendedMajors is structured similarly to Major[]
          // You might need to adapt this based on the actual AI output structure.
          // Ensure the AI output matches the `Major` interface or map it accordingly.
-         // const recommendedMajors = aiResult.recommendedMajors as Major[];
-         // setMajors(recommendedMajors);
-         // setFilteredMajors(recommendedMajors);
-         // setReasoning(aiResult.reasoning);
+         // Filter AI results based on subject requirements (client-side for now, AI should handle this ideally)
+         const compatibleMajors = aiResult.recommendedMajors.filter(major =>
+             // Implement logic to check if major.subjectRequirements is compatible with input.selectedSubjects
+             // This requires adding 'subjectRequirements' to the Major interface and data
+             // For now, assume all AI recommendations are compatible or skip filtering
+             true // Placeholder: Assume compatibility for now
+         );
+         setMajors(compatibleMajors);
+         setFilteredMajors(compatibleMajors);
+         setReasoning(aiResult.reasoning);
 
-        // Option 2: Use the mock service directly for now
+        // Option 2: Use the mock service directly for now (Commented out as AI is primary)
+        /*
         const filter: MajorRecommendationFilter = {
           regions: input.intendedRegions,
           majorCategories: input.intendedMajorCategories,
           // Other filters will be applied client-side for now
         };
         const recommendedMajors = await getMajorRecommendations(filter);
-        setMajors(recommendedMajors);
-        setFilteredMajors(recommendedMajors); // Initially show all recommendations
-        setReasoning("以下是根据您的初步意向筛选的专业列表。您可以使用筛选栏进一步细化结果。"); // Mock reasoning
-
+         // Filter mock results based on subject requirements
+         const compatibleMockMajors = recommendedMajors.filter(major =>
+             // Implement logic as above, using mock data's subject requirements
+             true // Placeholder
+         );
+        setMajors(compatibleMockMajors);
+        setFilteredMajors(compatibleMockMajors); // Initially show all recommendations
+        setReasoning("以下是根据您的初步意向和选考科目筛选的专业列表。您可以使用筛选栏进一步细化结果。"); // Updated Mock reasoning
+        */
 
       } catch (err) {
         console.error('获取推荐失败:', err);
-        setError('获取专业推荐时出错，请稍后重试。');
+        setError(`获取专业推荐时出错: ${err instanceof Error ? err.message : String(err)}`);
       } finally {
         setIsLoading(false);
       }
@@ -92,36 +113,34 @@ function RecommendationsPageContent() {
 
   const handleFilterChange = (filters: MajorRecommendationFilter) => {
       // Client-side filtering based on all filter criteria
-      let tempMajors = [...majors];
+      let tempMajors = [...majors]; // Start with AI/mock recommendations already filtered by subjects
 
       if (filters.regions && filters.regions.length > 0) {
-          // Assuming university data includes region, which is missing in the mock.
-          // This part needs adjustment once real data/API is available.
-          // For now, let's simulate filtering by university name as a placeholder.
-          // tempMajors = tempMajors.filter(major => filters.regions?.some(region => major.university.includes(region)));
-          // Since no region info in mock, we skip this filter for now or use a placeholder logic
-           console.warn("Region filtering not fully implemented with mock data.");
+          tempMajors = tempMajors.filter(major => major.region && filters.regions?.includes(major.region));
       }
       if (filters.majorCategories && filters.majorCategories.length > 0) {
-          // Assuming major data includes category, which is missing in the mock.
-           // This part needs adjustment once real data/API is available.
-           // For now, let's simulate filtering by major name as a placeholder.
-          // tempMajors = tempMajors.filter(major => filters.majorCategories?.some(cat => major.majorName.includes(cat)));
-           console.warn("Major Category filtering not fully implemented with mock data.");
+           tempMajors = tempMajors.filter(major => major.majorCategory && filters.majorCategories?.includes(major.majorCategory));
       }
-      if (filters.schoolingLength) {
-           // No schoolingLength in mock data
-           console.warn("Schooling Length filtering not implemented with mock data.");
+      if (filters.schoolingLength && filters.schoolingLength !== '全部') {
+          tempMajors = tempMajors.filter(major => major.schoolingLength === filters.schoolingLength);
       }
-       if (filters.tuitionRange) {
-           // No tuitionRange in mock data
-            console.warn("Tuition Range filtering not implemented with mock data.");
+       if (filters.tuitionRange && filters.tuitionRange !== '全部') {
+           tempMajors = tempMajors.filter(major => {
+              if (major.tuition === undefined || major.tuition === null) return false;
+               switch (filters.tuitionRange) {
+                   case '5000元以下': return major.tuition < 5000;
+                   case '5000-10000元': return major.tuition >= 5000 && major.tuition <= 10000;
+                   case '10000-20000元': return major.tuition > 10000 && major.tuition <= 20000;
+                   case '20000元以上': return major.tuition > 20000;
+                   default: return true;
+               }
+           });
        }
-       if (filters.universityTier) {
-           // No universityTier in mock data
-           console.warn("University Tier filtering not implemented with mock data.");
+       if (filters.universityTier && filters.universityTier !== '全部') {
+          tempMajors = tempMajors.filter(major => major.universityTier === filters.universityTier);
        }
-
+        // Add filtering based on subject requirements if needed client-side (though ideally done earlier)
+        // e.g., if filter includes subject criteria
 
       setFilteredMajors(tempMajors);
   };
@@ -129,6 +148,7 @@ function RecommendationsPageContent() {
   const LoadingSkeleton = () => (
     <div className="space-y-4">
       <Skeleton className="h-8 w-1/4" />
+       <Skeleton className="h-20 w-full" /> {/* Placeholder for reasoning */}
       <Skeleton className="h-10 w-full" />
       <div className="border rounded-lg overflow-hidden">
         <Skeleton className="h-12 w-full" />
