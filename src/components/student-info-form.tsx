@@ -25,6 +25,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Mock data - replace with actual data fetching if needed
 const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '陕西', '山东', '河南'];
@@ -113,7 +114,8 @@ export function StudentInfoForm() {
       field.onChange(newValues);
     };
 
-    const removeValue = (valueToRemove: string) => {
+    const removeValue = (e: React.MouseEvent, valueToRemove: string) => {
+        e.stopPropagation(); // Prevent popover from opening when removing badge
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
     }
@@ -121,40 +123,41 @@ export function StudentInfoForm() {
     return (
       <FormItem>
         <FormLabel>{label} {maxSelection ? `(必须选择 ${maxSelection} 项)` : ''}</FormLabel>
-         <div className="flex flex-wrap gap-1 mb-2 min-h-[26px]"> {/* Added min-height */}
-            {selectedValues.map((value: string) => (
-                <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs sm:text-sm">
-                    {value}
-                    <button
-                        type="button"
-                        onClick={() => removeValue(value)}
-                        className="rounded-full p-0.5 hover:bg-muted-foreground/20"
-                        aria-label={`移除 ${value}`}
-                    >
-                        <X className="h-3 w-3" />
-                    </button>
-                </Badge>
-            ))}
-        </div>
         <Popover>
           <PopoverTrigger asChild>
             <FormControl>
               <Button
                 variant="outline"
                 role="combobox"
-                className="w-full justify-between font-normal text-muted-foreground"
+                className={cn(
+                  "w-full justify-between font-normal h-auto min-h-10 px-3 py-2", // Use h-auto for wrapping
+                  selectedValues.length === 0 && "text-muted-foreground"
+                )}
               >
-                 <span className="truncate"> {/* Added truncate */}
-                   {selectedValues.length > 0
-                      ? `${selectedValues.length} / ${maxSelection ?? options.length} 已选择`
-                      : `请选择${label}`
-                   }
-                 </span>
+                 <div className="flex flex-wrap gap-1 items-center flex-grow"> {/* Use flex-grow */}
+                    {selectedValues.length > 0 ? (
+                       selectedValues.map((value: string) => (
+                            <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap">
+                                {value}
+                                <button
+                                    type="button"
+                                    onClick={(e) => removeValue(e, value)}
+                                    className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring"
+                                    aria-label={`移除 ${value}`}
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                       ))
+                    ) : (
+                        <span className="truncate">请选择{label}</span> // Placeholder when empty
+                    )}
+                 </div>
                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start"> {/* Added max-width */}
+          <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start">
              <ScrollArea className="h-60">
                 <div className="p-2">
                   {options.map((option) => (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -77,7 +78,8 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
            handleMultiSelectChange(filterKey, newValues);
        };
 
-       const removeValue = (valueToRemove: string) => {
+       const removeValue = (e: React.MouseEvent, valueToRemove: string) => {
+           e.stopPropagation(); // Prevent popover from opening when removing badge
            const newValues = selectedValues.filter((v) => v !== valueToRemove);
            handleMultiSelectChange(filterKey, newValues);
        }
@@ -85,35 +87,39 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
        return (
            <div className="space-y-1">
                <Label htmlFor={filterKey as string} className="text-xs">{label}</Label>
-               <div className="flex flex-wrap gap-1 mb-1 min-h-[20px]">
-                   {selectedValues.map((value) => (
-                       <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs">
-                           {value}
-                           <button
-                               type="button"
-                               onClick={() => removeValue(value)}
-                               className="rounded-full p-0.5 hover:bg-muted-foreground/20"
-                               aria-label={`移除 ${value}`}
-                           >
-                               <X className="h-3 w-3" />
-                           </button>
-                       </Badge>
-                   ))}
-               </div>
                <Popover>
-                   <PopoverTrigger asChild>
+                    <PopoverTrigger asChild>
                        <Button
                            variant="outline"
                            role="combobox"
-                           className="w-full justify-between font-normal text-muted-foreground h-9 text-xs px-3"
+                           className={cn(
+                             "w-full justify-between font-normal h-auto min-h-9 text-xs px-3 py-1", // Adjusted height and padding
+                             selectedValues.length === 0 && "text-muted-foreground"
+                           )}
                        >
-                           <span className="truncate"> {/* Added truncate */}
-                             {selectedValues.length > 0 ? `${selectedValues.length} 已选择` : `选择${label}`}
-                           </span>
-                           <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50"/>
+                            <div className="flex flex-wrap gap-1 items-center flex-grow mr-1"> {/* Container for badges */}
+                               {selectedValues.length > 0 ? (
+                                   selectedValues.map((value) => (
+                                       <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs whitespace-nowrap">
+                                           {value}
+                                           <button
+                                               type="button"
+                                               onClick={(e) => removeValue(e, value)}
+                                               className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring"
+                                               aria-label={`移除 ${value}`}
+                                           >
+                                               <X className="h-3 w-3" />
+                                           </button>
+                                       </Badge>
+                                   ))
+                               ) : (
+                                    <span className="truncate">选择{label}</span> // Placeholder
+                               )}
+                            </div>
+                           <ChevronDown className="h-3 w-3 shrink-0 opacity-50"/>
                        </Button>
                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start"> {/* Added max-width */}
+                   <PopoverContent className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0" align="start">
                        <ScrollArea className="h-48">
                            <div className="p-1">
                                {options.map((option) => (
