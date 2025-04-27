@@ -79,8 +79,9 @@ export function StudentInfoForm() {
      // Ensure required fields have values before submitting, using default placeholders if empty
      const submissionValues = {
        ...values,
-       gaokaoScore: values.gaokaoScore ?? 500,
-       provinceRanking: values.provinceRanking ?? 10000,
+       // Use placeholder if value is undefined, otherwise use the entered value
+       gaokaoScore: values.gaokaoScore === undefined ? 500 : values.gaokaoScore,
+       provinceRanking: values.provinceRanking === undefined ? 10000 : values.provinceRanking,
      };
 
     console.log('Form submitted:', submissionValues);
@@ -168,19 +169,6 @@ export function StudentInfoForm() {
         }
     };
 
-    // Determine badge variant based on badgeType prop
-    const getBadgeVariant = (): 'default' | 'secondary' | 'destructive' | 'outline' | 'accent' => {
-      switch (badgeType) {
-        case 'subject':
-          return 'accent'; // Use accent for light blue
-        case 'excluded':
-          return 'destructive'; // Use destructive for light red
-        default:
-          return 'secondary'; // Default to secondary (light green originally, now used for intended)
-      }
-    };
-
-
     return (
       <FormItem>
         <FormLabel>{label}</FormLabel>
@@ -201,12 +189,12 @@ export function StudentInfoForm() {
                        selectedValues.map((value: string) => (
                             <Badge
                               key={value}
-                              // Apply conditional variant and custom classes if needed
-                              variant={getBadgeVariant()}
+                              // Apply conditional styling directly using cn and Tailwind utilities
                               className={cn(
-                                "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap",
-                                badgeType === 'subject' && 'bg-accent text-accent-foreground hover:bg-accent/80', // Explicit accent styling
-                                badgeType === 'excluded' && 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80' // Explicit destructive styling
+                                "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent", // Base badge styles
+                                badgeType === 'default' && 'bg-secondary text-secondary-foreground hover:bg-secondary/80', // Default (intended)
+                                badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Very Light Blue
+                                badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink
                               )}
                              >
                                 {value}
@@ -216,7 +204,7 @@ export function StudentInfoForm() {
                                     onMouseDown={(e) => { e.preventDefault(); }} // Prevent focus loss on mouse down
                                     onClick={(e) => removeValue(e, value)} // Handle removal on click
                                     onKeyDown={(e) => handleKeyDownRemove(e, value)}
-                                    className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                                    className="rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer" // Adjusted hover for better visibility on custom bg
                                     aria-label={`移除 ${value}`}
                                 >
                                     <X className="h-3 w-3" />
@@ -286,6 +274,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
+                    {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
                     <Input type="number" placeholder="例如: 500" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
@@ -299,6 +288,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
+                     {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
                     <Input type="number" placeholder="例如: 10000" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
@@ -368,3 +358,5 @@ export function StudentInfoForm() {
     </Form>
   );
 }
+
+    
