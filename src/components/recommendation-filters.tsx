@@ -137,27 +137,22 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                                {options.map((option) => (
                                    <div
                                        key={option}
+                                       // Prevent focus shift on click which closes popover
+                                       onMouseDown={(e) => e.preventDefault()}
                                        className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
-                                       onClick={(e) => {
-                                           // Stop propagation to prevent popover close when clicking the item area
-                                           e.stopPropagation();
-                                           handleSelect(option);
-                                       }}
                                    >
                                        <Checkbox
                                            id={`${filterKey as string}-${option}`}
                                            checked={selectedValues.includes(option)}
-                                           // Prevent checkbox click from closing popover, let the div handle it
-                                           // onClick={(e) => e.stopPropagation()}
+                                           // Use onClick for checkbox interaction to trigger state update
+                                           onClick={() => handleSelect(option)}
                                            aria-labelledby={`${filterKey as string}-${option}-label`}
-                                            className="h-3.5 w-3.5"
+                                           className="h-3.5 w-3.5"
                                        />
                                        <label
                                             id={`${filterKey as string}-${option}-label`}
-                                           htmlFor={`${filterKey as string}-${option}`}
-                                           className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
-                                            // Prevent label click from closing popover, let the div handle it
-                                            // onClick={(e) => e.stopPropagation()}
+                                            htmlFor={`${filterKey as string}-${option}`}
+                                            className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
                                        >
                                            {option}
                                        </label>

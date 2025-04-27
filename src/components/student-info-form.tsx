@@ -52,8 +52,8 @@ export function StudentInfoForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: '' as unknown as number, // Initialize with empty string
-      provinceRanking: '' as unknown as number, // Initialize with empty string
+      gaokaoScore: undefined, // Initialize with undefined for uncontrolled -> controlled check
+      provinceRanking: undefined, // Initialize with undefined
       selectedSubjects: [], // Default value for selected subjects
       intendedRegions: [],
       intendedMajorCategories: [],
@@ -175,14 +175,15 @@ export function StudentInfoForm() {
                   {options.map((option) => (
                     <div
                       key={option}
+                      // Prevent focus shift on click which closes popover
+                      onMouseDown={(e) => e.preventDefault()}
                       className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer"
-                       // Let the checkbox handle the select logic, prevent div click from closing popover
-                      onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
                         id={`${field.name}-${option}`}
                         checked={selectedValues.includes(option)}
-                        onCheckedChange={() => handleSelect(option)} // Use onCheckedChange for Checkbox
+                        // This handles the state update
+                        onCheckedChange={() => handleSelect(option)}
                         aria-labelledby={`${field.name}-${option}-label`}
                         disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)} // Disable if max reached and not selected
                       />
@@ -190,8 +191,6 @@ export function StudentInfoForm() {
                         id={`${field.name}-${option}-label`}
                         htmlFor={`${field.name}-${option}`}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
-                        // Click label to trigger checkbox
-                        onClick={() => handleSelect(option)}
                       >
                         {option}
                       </label>
@@ -218,7 +217,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
-                    <Input type="number" placeholder="请输入您的分数" {...field} />
+                    <Input type="number" placeholder="请输入您的分数" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -231,7 +230,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>全省排名位次</FormLabel>
                 <FormControl>
-                    <Input type="number" placeholder="请输入您的排名" {...field} />
+                    <Input type="number" placeholder="请输入您的排名" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
