@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ArrowLeft, Loader2, Building, GraduationCap, MapPin, BookOpen, CalendarDays, Wallet, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils'; // Import cn
 
 function MajorDetailsPageContent() {
     const params = useParams();
