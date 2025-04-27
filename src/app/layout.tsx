@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: '高考志愿助手', // Updated app name
+  title: '浙志愿', // Updated app name
   description: '智能推荐高考志愿', // Updated description
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">{/* Changed lang to Chinese */}
+    <html lang="zh-CN">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`} // Added font-sans
       >
