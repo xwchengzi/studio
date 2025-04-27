@@ -36,15 +36,13 @@ const SUBJECTS = ['政治', '历史', '地理', '物理', '化学', '生物', '�
 
 const formSchema = z.object({
   gaokaoScore: z.coerce
-    .number({ invalid_type_error: '请输入有效分数' })
+    .number({ invalid_type_error: '请输入有效分数', required_error: '高考分数不能为空' })
     .min(0, '分数不能为负')
-    .max(750, '分数不能超过750')
-    .optional(), // Make optional initially
+    .max(750, '分数不能超过750'), // Removed optional
   provinceRanking: z.coerce
-    .number({ invalid_type_error: '请输入有效排名' })
+    .number({ invalid_type_error: '请输入有效排名', required_error: '所在位次不能为空' })
     .int('排名必须是整数')
-    .min(1, '排名必须大于0')
-    .optional(), // Make optional initially
+    .min(1, '排名必须大于0'), // Removed optional
   selectedSubjects: z.array(z.string()).length(3, '必须选择 3 个科目'),
   intendedRegions: z.array(z.string()).optional(),
   intendedMajorCategories: z.array(z.string()).optional(),
@@ -76,15 +74,7 @@ export function StudentInfoForm() {
   });
 
   function onSubmit(values: FormData) {
-     // Ensure required fields have values before submitting, using default placeholders if empty
-     const submissionValues = {
-       ...values,
-       // Use placeholder if value is undefined, otherwise use the entered value
-       gaokaoScore: values.gaokaoScore === undefined ? 500 : values.gaokaoScore,
-       provinceRanking: values.provinceRanking === undefined ? 10000 : values.provinceRanking,
-     };
-
-    console.log('Form submitted:', submissionValues);
+    console.log('Form submitted:', values); // No need to add default values here, Zod ensures they exist
     toast({
       title: '正在提交信息...',
       description: '正在为您生成推荐，请稍候。',
@@ -92,22 +82,22 @@ export function StudentInfoForm() {
 
     // Construct query params
     const params = new URLSearchParams();
-    params.set('gaokaoScore', submissionValues.gaokaoScore.toString());
-    params.set('provinceRanking', submissionValues.provinceRanking.toString());
-    if (submissionValues.selectedSubjects && submissionValues.selectedSubjects.length > 0) {
-        params.set('selectedSubjects', submissionValues.selectedSubjects.join(','));
+    params.set('gaokaoScore', values.gaokaoScore.toString());
+    params.set('provinceRanking', values.provinceRanking.toString());
+    if (values.selectedSubjects && values.selectedSubjects.length > 0) {
+        params.set('selectedSubjects', values.selectedSubjects.join(','));
     }
-    if (submissionValues.intendedRegions && submissionValues.intendedRegions.length > 0) {
-      params.set('intendedRegions', submissionValues.intendedRegions.join(','));
+    if (values.intendedRegions && values.intendedRegions.length > 0) {
+      params.set('intendedRegions', values.intendedRegions.join(','));
     }
-    if (submissionValues.intendedMajorCategories && submissionValues.intendedMajorCategories.length > 0) {
-      params.set('intendedMajorCategories', submissionValues.intendedMajorCategories.join(','));
+    if (values.intendedMajorCategories && values.intendedMajorCategories.length > 0) {
+      params.set('intendedMajorCategories', values.intendedMajorCategories.join(','));
     }
-    if (submissionValues.excludedRegions && submissionValues.excludedRegions.length > 0) {
-      params.set('excludedRegions', submissionValues.excludedRegions.join(','));
+    if (values.excludedRegions && values.excludedRegions.length > 0) {
+      params.set('excludedRegions', values.excludedRegions.join(','));
     }
-     if (submissionValues.excludedMajorCategories && submissionValues.excludedMajorCategories.length > 0) {
-      params.set('excludedMajorCategories', submissionValues.excludedMajorCategories.join(','));
+     if (values.excludedMajorCategories && values.excludedMajorCategories.length > 0) {
+      params.set('excludedMajorCategories', values.excludedMajorCategories.join(','));
     }
 
     router.push(`/recommendations?${params.toString()}`);
@@ -275,7 +265,7 @@ export function StudentInfoForm() {
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
                     {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
-                    <Input type="number" placeholder="例如: 500" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="请输入高考分数" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -289,7 +279,7 @@ export function StudentInfoForm() {
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
                      {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
-                    <Input type="number" placeholder="例如: 10000" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="请输入所在位次" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -358,5 +348,3 @@ export function StudentInfoForm() {
     </Form>
   );
 }
-
-    
