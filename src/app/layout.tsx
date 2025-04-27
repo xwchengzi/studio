@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: '25高考志愿-浙江专版', // Updated app name
+  title: '25高考志愿（浙江专版）', // Updated app name
   description: '智能推荐高考志愿', // Updated description
 };
 
