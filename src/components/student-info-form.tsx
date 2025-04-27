@@ -176,18 +176,22 @@ export function StudentInfoForm() {
                     <div
                       key={option}
                       className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer"
-                      onClick={() => handleSelect(option)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent popover close on item click
+                        handleSelect(option);
+                      }}
                     >
                       <Checkbox
                         id={`${field.name}-${option}`}
                         checked={selectedValues.includes(option)}
-                        onCheckedChange={() => handleSelect(option)}
-                        onClick={(e) => e.stopPropagation()} // Prevent triggering div click again
+                        // onCheckedChange={() => handleSelect(option)} // Let the div's onClick handle the logic
+                        onClick={(e) => e.stopPropagation()} // Prevent label click and div click double trigger
                         disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)} // Disable if max reached and not selected
                       />
                       <label
                         htmlFor={`${field.name}-${option}`}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()} // Also stop propagation on label click
                       >
                         {option}
                       </label>
