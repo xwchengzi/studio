@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN"> {/* Changed lang to Chinese */}
+    <html lang="zh-CN">{/* Changed lang to Chinese */}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`} // Added font-sans
       >
