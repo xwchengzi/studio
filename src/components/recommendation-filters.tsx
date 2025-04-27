@@ -78,11 +78,20 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
            handleMultiSelectChange(filterKey, newValues);
        };
 
-       const removeValue = (e: React.MouseEvent, valueToRemove: string) => {
-           e.stopPropagation(); // Prevent popover from opening when removing badge
+       const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
+           e.stopPropagation(); // Prevent popover from opening
+           e.preventDefault(); // Prevent default behavior
            const newValues = selectedValues.filter((v) => v !== valueToRemove);
            handleMultiSelectChange(filterKey, newValues);
        }
+
+        // Handle keyboard interaction for removing items
+        const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                removeValue(e, valueToRemove);
+            }
+        };
+
 
        return (
            <div className="space-y-1">
@@ -102,14 +111,17 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                                    selectedValues.map((value) => (
                                        <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs whitespace-nowrap">
                                            {value}
-                                           <button
-                                               type="button"
-                                               onClick={(e) => removeValue(e, value)}
-                                               className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring"
-                                               aria-label={`移除 ${value}`}
-                                           >
-                                               <X className="h-3 w-3" />
-                                           </button>
+                                            {/* Changed button to div with role="button" */}
+                                           <div
+                                                role="button"
+                                                tabIndex={0} // Make it focusable
+                                                onClick={(e) => removeValue(e, value)}
+                                                onKeyDown={(e) => handleKeyDownRemove(e, value)}
+                                                className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
+                                                aria-label={`移除 ${value}`}
+                                            >
+                                                <X className="h-3 w-3" />
+                                           </div>
                                        </Badge>
                                    ))
                                ) : (
