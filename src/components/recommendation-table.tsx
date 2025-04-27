@@ -110,16 +110,16 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
         <Table>
             <TableHeader className="bg-muted/50 text-xs">
                 <TableRow>
-                <SortableHeader columnKey="majorName" label="专业名称" className="min-w-[150px] sticky left-0 bg-muted/50 z-10" />
-                <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[110px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="admissionRanking2024" label="24年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="admissionScore2023" label="23年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="admissionRanking2023" label="23年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
-                 <SortableHeader columnKey="admissionScore2022" label="22年分数" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
-                <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[70px]" /> {/* Slightly reduced min-width */}
+                    <SortableHeader columnKey="majorName" label="专业名称" className="min-w-[150px] sticky left-0 bg-muted/50 z-10" />
+                    <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" />
+                    <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" />
+                    <SortableHeader columnKey="subjectRequirements" label="选科要求" className="min-w-[110px]" />
+                    <SortableHeader columnKey="admissionScore2024" label="24年分数" className="text-right min-w-[70px]" />
+                    <SortableHeader columnKey="admissionRanking2024" label="24年位次" className="text-right min-w-[70px]" />
+                    <SortableHeader columnKey="admissionScore2023" label="23年分数" className="text-right min-w-[70px]" />
+                    <SortableHeader columnKey="admissionRanking2023" label="23年位次" className="text-right min-w-[70px]" />
+                    <SortableHeader columnKey="admissionScore2022" label="22年分数" className="text-right min-w-[70px]" />
+                    <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[70px]" />
                 </TableRow>
             </TableHeader>
             <TableBody className="text-xs sm:text-sm"> {/* Smaller text on small screens */}
