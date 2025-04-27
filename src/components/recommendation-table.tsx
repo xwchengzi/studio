@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Major } from '@/services/major-recommendation';
 import {
   Table,
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+// Removed Button import as it's not used
 import { ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,7 @@ type SortKey = keyof Major | null;
 type SortDirection = 'asc' | 'desc';
 
 export function RecommendationTable({ majors }: RecommendationTableProps) {
+  const router = useRouter(); // Initialize useRouter
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('estimatedRanking2025'); // Default sort by 25年预估位次
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc'); // Default sort ascending
@@ -36,6 +38,11 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
       setSortKey(key);
       setSortDirection('asc');
     }
+  };
+
+  // Navigate to major details page
+  const handleRowClick = (major: Major) => {
+    router.push(`/major/${encodeURIComponent(major.university)}/${encodeURIComponent(major.majorCode)}`);
   };
 
   const SortableHeader = ({ columnKey, label, className }: { columnKey: SortKey, label: string, className?: string }) => (
@@ -127,7 +134,11 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
             <TableBody className="text-xs sm:text-sm">
               {sortedAndFilteredMajors.length > 0 ? (
                 sortedAndFilteredMajors.map((major, index) => (
-                    <TableRow key={`${major.majorCode}-${major.university}-${index}`} className="hover:bg-accent/50">{/* Start TableRow for Body */}
+                    <TableRow
+                      key={`${major.majorCode}-${major.university}-${index}`}
+                      className="hover:bg-accent/50 cursor-pointer" // Added cursor-pointer
+                      onClick={() => handleRowClick(major)} // Added onClick handler
+                    >
                         <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell>{/* Adjusted padding */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell>{/* Adjusted padding */}
                         <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell>{/* Adjusted padding */}
@@ -139,14 +150,14 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2023 ?? '-'}</TableCell>{/* Adjusted padding */}
                          <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2022 ?? '-'}</TableCell>{/* Adjusted padding */}
                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2022 ?? '-'}</TableCell>{/* Adjusted padding */}
-                    </TableRow>/* End TableRow for Body */
+                    </TableRow>
                     ))
                 ) : (
-                    <TableRow>{/* Start TableRow for Empty State */}
+                    <TableRow>
                         <TableCell colSpan={11} className="h-24 text-center text-muted-foreground">
                             {searchTerm ? '未找到匹配的专业。' : '暂无符合条件的推荐数据。'}
                         </TableCell>
-                    </TableRow>/* End TableRow for Empty State */
+                    </TableRow>
                 )}
             </TableBody>
         </Table>
