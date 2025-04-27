@@ -35,16 +35,17 @@ const MAJOR_CATEGORIES = [
 const SUBJECTS = ['政治', '历史', '地理', '物理', '化学', '生物', '技术'];
 
 const formSchema = z.object({
-  // Use coerce.number and set required_error. Remove optional/or/refine.
   gaokaoScore: z.coerce
-    .number({ invalid_type_error: '请输入有效分数', required_error: '请输入高考分数' })
+    .number({ invalid_type_error: '请输入有效分数' })
     .min(0, '分数不能为负')
-    .max(750, '分数不能超过750'),
+    .max(750, '分数不能超过750')
+    .optional(), // Make optional initially
   provinceRanking: z.coerce
-    .number({ invalid_type_error: '请输入有效排名', required_error: '请输入所在位次' })
+    .number({ invalid_type_error: '请输入有效排名' })
     .int('排名必须是整数')
-    .min(1, '排名必须大于0'),
-  selectedSubjects: z.array(z.string()).length(3, '必须选择 3 个科目'), // Added field for selected subjects
+    .min(1, '排名必须大于0')
+    .optional(), // Make optional initially
+  selectedSubjects: z.array(z.string()).length(3, '必须选择 3 个科目'),
   intendedRegions: z.array(z.string()).optional(),
   intendedMajorCategories: z.array(z.string()).optional(),
   excludedRegions: z.array(z.string()).optional(),
@@ -54,15 +55,19 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+// Define badge types for conditional styling
+type BadgeType = 'default' | 'subject' | 'excluded';
+
+
 export function StudentInfoForm() {
   const router = useRouter();
   const { toast } = useToast();
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: '', // Start empty, rely on placeholder
-      provinceRanking: '', // Start empty, rely on placeholder
-      selectedSubjects: [], // Default value for selected subjects
+      gaokaoScore: undefined, // Use undefined for placeholders to work correctly
+      provinceRanking: undefined, // Use undefined for placeholders to work correctly
+      selectedSubjects: [],
       intendedRegions: [],
       intendedMajorCategories: [],
       excludedRegions: [],
@@ -71,9 +76,14 @@ export function StudentInfoForm() {
   });
 
   function onSubmit(values: FormData) {
-    // No need to force default values here, validation handles required fields
-    // values will contain numbers due to z.coerce.number
-    console.log('Form submitted:', values);
+     // Ensure required fields have values before submitting, using default placeholders if empty
+     const submissionValues = {
+       ...values,
+       gaokaoScore: values.gaokaoScore ?? 500,
+       provinceRanking: values.provinceRanking ?? 10000,
+     };
+
+    console.log('Form submitted:', submissionValues);
     toast({
       title: '正在提交信息...',
       description: '正在为您生成推荐，请稍候。',
@@ -81,29 +91,41 @@ export function StudentInfoForm() {
 
     // Construct query params
     const params = new URLSearchParams();
-    params.set('gaokaoScore', values.gaokaoScore.toString());
-    params.set('provinceRanking', values.provinceRanking.toString());
-    if (values.selectedSubjects && values.selectedSubjects.length > 0) {
-        params.set('selectedSubjects', values.selectedSubjects.join(',')); // Add selected subjects
+    params.set('gaokaoScore', submissionValues.gaokaoScore.toString());
+    params.set('provinceRanking', submissionValues.provinceRanking.toString());
+    if (submissionValues.selectedSubjects && submissionValues.selectedSubjects.length > 0) {
+        params.set('selectedSubjects', submissionValues.selectedSubjects.join(','));
     }
-    if (values.intendedRegions && values.intendedRegions.length > 0) {
-      params.set('intendedRegions', values.intendedRegions.join(','));
+    if (submissionValues.intendedRegions && submissionValues.intendedRegions.length > 0) {
+      params.set('intendedRegions', submissionValues.intendedRegions.join(','));
     }
-    if (values.intendedMajorCategories && values.intendedMajorCategories.length > 0) {
-      params.set('intendedMajorCategories', values.intendedMajorCategories.join(','));
+    if (submissionValues.intendedMajorCategories && submissionValues.intendedMajorCategories.length > 0) {
+      params.set('intendedMajorCategories', submissionValues.intendedMajorCategories.join(','));
     }
-    if (values.excludedRegions && values.excludedRegions.length > 0) {
-      params.set('excludedRegions', values.excludedRegions.join(','));
+    if (submissionValues.excludedRegions && submissionValues.excludedRegions.length > 0) {
+      params.set('excludedRegions', submissionValues.excludedRegions.join(','));
     }
-     if (values.excludedMajorCategories && values.excludedMajorCategories.length > 0) {
-      params.set('excludedMajorCategories', values.excludedMajorCategories.join(','));
+     if (submissionValues.excludedMajorCategories && submissionValues.excludedMajorCategories.length > 0) {
+      params.set('excludedMajorCategories', submissionValues.excludedMajorCategories.join(','));
     }
 
     router.push(`/recommendations?${params.toString()}`);
   }
 
   // Custom MultiSelect Component using Popover
-  const MultiSelectField = ({ field, label, options, maxSelection }: { field: any; label: string; options: string[], maxSelection?: number }) => {
+  const MultiSelectField = ({
+      field,
+      label,
+      options,
+      maxSelection,
+      badgeType = 'default' // Default badge type
+    }: {
+      field: any;
+      label: string;
+      options: string[];
+      maxSelection?: number;
+      badgeType?: BadgeType; // Added prop for badge type
+    }) => {
     const selectedValues = field.value || [];
     const [isOpen, setIsOpen] = React.useState(false);
 
@@ -118,32 +140,44 @@ export function StudentInfoForm() {
                  variant: 'destructive',
                  duration: 3000,
              });
-              return; // Prevent adding more than maxSelection
+              return;
           }
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
       // Keep popover open if within maxSelection limit or removing an item
-      if (!maxSelection || newValues.length < maxSelection || selectedValues.includes(option)) {
-          setIsOpen(true);
-      } else {
-          setIsOpen(false); // Close popover if max selection is reached on adding an item
-      }
+       if (!maxSelection || newValues.length < maxSelection || selectedValues.includes(option)) {
+            // Don't automatically close the popover here to allow multiple selections
+           // setIsOpen(true); // Keep it open implicitly by not setting it to false
+       } else {
+           setIsOpen(false); // Close only when max selection is hit
+       }
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-        e.stopPropagation(); // Prevent popover from closing
-        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation();
+        e.preventDefault();
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
-        setIsOpen(true); // Keep open after removing
+       // setIsOpen(true); // Keep open after removing - Removed this, let user control closing
     }
 
-    // Handle keyboard interaction for removing items
     const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
         if (e.key === 'Enter' || e.key === ' ') {
             removeValue(e, valueToRemove);
         }
+    };
+
+    // Determine badge variant based on badgeType prop
+    const getBadgeVariant = (): 'default' | 'secondary' | 'destructive' | 'outline' | 'accent' => {
+      switch (badgeType) {
+        case 'subject':
+          return 'accent'; // Use accent for light blue
+        case 'excluded':
+          return 'destructive'; // Use destructive for light red
+        default:
+          return 'secondary'; // Default to secondary (light green originally, now used for intended)
+      }
     };
 
 
@@ -158,21 +192,29 @@ export function StudentInfoForm() {
                 role="combobox"
                 aria-expanded={isOpen}
                 className={cn(
-                  "w-full justify-between font-normal h-auto min-h-10 px-3 py-2", // Use h-auto for wrapping
+                  "w-full justify-between font-normal h-auto min-h-10 px-3 py-2",
                   selectedValues.length === 0 && "text-muted-foreground"
                 )}
               >
-                 <div className="flex flex-wrap gap-1 items-center flex-grow mr-1"> {/* Use flex-grow and margin-right */}
+                 <div className="flex flex-wrap gap-1 items-center flex-grow mr-1">
                     {selectedValues.length > 0 ? (
                        selectedValues.map((value: string) => (
-                            <Badge key={value} variant="secondary" className="flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap">
+                            <Badge
+                              key={value}
+                              // Apply conditional variant and custom classes if needed
+                              variant={getBadgeVariant()}
+                              className={cn(
+                                "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap",
+                                badgeType === 'subject' && 'bg-accent text-accent-foreground hover:bg-accent/80', // Explicit accent styling
+                                badgeType === 'excluded' && 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80' // Explicit destructive styling
+                              )}
+                             >
                                 {value}
-                                {/* Changed div to span for semantic correctness and accessibility */}
                                 <span
                                     role="button"
-                                    tabIndex={0} // Make it focusable
-                                    onMouseDown={(e) => { e.preventDefault(); removeValue(e, value); }} // Prevent focus loss and handle removal
-                                    onClick={(e) => e.stopPropagation()} // Prevent button click from toggling popover if inside
+                                    tabIndex={0}
+                                    onMouseDown={(e) => { e.preventDefault(); }} // Prevent focus loss on mouse down
+                                    onClick={(e) => removeValue(e, value)} // Handle removal on click
                                     onKeyDown={(e) => handleKeyDownRemove(e, value)}
                                     className="rounded-full p-0.5 hover:bg-muted-foreground/20 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
                                     aria-label={`移除 ${value}`}
@@ -182,7 +224,7 @@ export function StudentInfoForm() {
                             </Badge>
                        ))
                     ) : (
-                        <span className="truncate">请选择{label}</span> // Placeholder when empty
+                        <span className="truncate">请选择{label}</span>
                     )}
                  </div>
                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
@@ -192,36 +234,33 @@ export function StudentInfoForm() {
           <PopoverContent
               className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
               align="start"
-              onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack
+              onOpenAutoFocus={(e) => e.preventDefault()}
           >
              <ScrollArea className="h-60">
                 <div className="p-2">
                   {options.map((option) => (
                     <div
                       key={option}
-                      onMouseDown={(e) => e.preventDefault()} // Prevents popover close on item click start
-                      onClick={() => handleSelect(option)} // Handle selection on click complete
+                      onMouseDown={(e) => e.preventDefault()} // Prevents focus loss and popover closure
+                      onClick={() => handleSelect(option)} // Handle selection on click
                       className={cn(
                         "flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer",
                         (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "opacity-50 cursor-not-allowed"
                       )}
-
                     >
                       <Checkbox
                         id={`${field.name}-${option}`}
                         checked={selectedValues.includes(option)}
-                        // Checkbox state is controlled by parent div click, no need for onCheckedChange here
                         aria-labelledby={`${field.name}-${option}-label`}
-                        disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)} // Disable if max reached and not selected
-                        tabIndex={-1} // Make checkbox non-focusable, parent div handles interaction
+                        disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)}
+                        tabIndex={-1}
                       />
                       <label
                         id={`${field.name}-${option}-label`}
-                        // htmlFor removed as Checkbox is not directly interactive via label
                         className={cn(
                           "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none",
                           (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "cursor-not-allowed"
-                          )} // Added select-none
+                          )}
                       >
                         {option}
                       </label>
@@ -247,7 +286,6 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
-                     {/* Use field.value directly, handle potential empty string */}
                     <Input type="number" placeholder="例如: 500" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
@@ -261,7 +299,6 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
-                    {/* Use field.value directly, handle potential empty string */}
                     <Input type="number" placeholder="例如: 10000" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
@@ -276,7 +313,13 @@ export function StudentInfoForm() {
               control={form.control}
               name="selectedSubjects"
               render={({ field }) => (
-                  <MultiSelectField field={field} label="选考科目" options={SUBJECTS} maxSelection={3} />
+                  <MultiSelectField
+                      field={field}
+                      label="选考科目"
+                      options={SUBJECTS}
+                      maxSelection={3}
+                      badgeType="subject" // Set badge type for subjects
+                  />
               )}
           />
 
@@ -287,14 +330,14 @@ export function StudentInfoForm() {
                 control={form.control}
                 name="intendedRegions"
                 render={({ field }) => (
-                    <MultiSelectField field={field} label="意向地区" options={REGIONS} />
+                    <MultiSelectField field={field} label="意向地区" options={REGIONS} badgeType="default" />
                 )}
             />
              <FormField
                 control={form.control}
                 name="intendedMajorCategories"
                 render={({ field }) => (
-                    <MultiSelectField field={field} label="意向专业" options={MAJOR_CATEGORIES} />
+                    <MultiSelectField field={field} label="意向专业" options={MAJOR_CATEGORIES} badgeType="default" />
                 )}
             />
         </div>
@@ -306,14 +349,14 @@ export function StudentInfoForm() {
                 control={form.control}
                 name="excludedRegions"
                 render={({ field }) => (
-                    <MultiSelectField field={field} label="排除地区" options={REGIONS} />
+                    <MultiSelectField field={field} label="排除地区" options={REGIONS} badgeType="excluded" />
                 )}
             />
             <FormField
                 control={form.control}
                 name="excludedMajorCategories"
                 render={({ field }) => (
-                     <MultiSelectField field={field} label="排除专业" options={MAJOR_CATEGORIES} />
+                     <MultiSelectField field={field} label="排除专业" options={MAJOR_CATEGORIES} badgeType="excluded" />
                 )}
             />
         </div>
