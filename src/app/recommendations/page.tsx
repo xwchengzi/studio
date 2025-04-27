@@ -4,7 +4,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Major, getMajorRecommendations, MajorRecommendationFilter } from '@/services/major-recommendation';
-import { generatePersonalizedRecommendations, GeneratePersonalizedRecommendationsInput } from '@/ai/flows/generate-personalized-recommendations';
+// Removed AI import: import { generatePersonalizedRecommendations, GeneratePersonalizedRecommendationsInput } from '@/ai/flows/generate-personalized-recommendations';
 import { RecommendationTable } from '@/components/recommendation-table';
 import { RecommendationFilters } from '@/components/recommendation-filters';
 import { Button } from '@/components/ui/button';
@@ -19,23 +19,24 @@ function RecommendationsPageContent() {
   const [filteredMajors, setFilteredMajors] = useState<Major[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reasoning, setReasoning] = useState<string | null>(null);
+  // Removed AI reasoning state: const [reasoning, setReasoning] = useState<string | null>(null);
   const [initialFilters, setInitialFilters] = useState<MajorRecommendationFilter | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-      setReasoning(null);
+      // Removed: setReasoning(null);
 
       const gaokaoScore = searchParams.get('gaokaoScore');
       const provinceRanking = searchParams.get('provinceRanking');
       const selectedSubjects = searchParams.get('selectedSubjects')?.split(',') || []; // Read selected subjects
       const intendedRegions = searchParams.get('intendedRegions')?.split(',') || [];
       const intendedMajorCategories = searchParams.get('intendedMajorCategories')?.split(',') || [];
-      const excludedRegions = searchParams.get('excludedRegions')?.split(',') || [];
-      const excludedMajorCategories = searchParams.get('excludedMajorCategories')?.split(',') || [];
+      const excludedRegions = searchParams.get('excludedRegions')?.split(',') || []; // Keep for potential future use? Or remove if unused?
+      const excludedMajorCategories = searchParams.get('excludedMajorCategories')?.split(',') || []; // Keep for potential future use? Or remove if unused?
 
+      // Basic validation still useful
       if (!gaokaoScore || !provinceRanking) {
         setError('缺少考生分数或排名信息。');
         setIsLoading(false);
@@ -47,58 +48,34 @@ function RecommendationsPageContent() {
            return;
        }
 
+      // Removed AI input definition
 
-      const input: GeneratePersonalizedRecommendationsInput = {
-        gaokaoScore: parseInt(gaokaoScore, 10),
-        provinceRanking: parseInt(provinceRanking, 10),
-        selectedSubjects: selectedSubjects, // Pass selected subjects to AI input
-        intendedRegions: intendedRegions.length > 0 ? intendedRegions : undefined,
-        intendedMajorCategories: intendedMajorCategories.length > 0 ? intendedMajorCategories : undefined,
-        excludedRegions: excludedRegions.length > 0 ? excludedRegions : undefined,
-        excludedMajorCategories: excludedMajorCategories.length > 0 ? excludedMajorCategories : undefined,
-      };
-
-      // Set initial filters based on intended regions/categories
-      setInitialFilters({
+      // Set initial filters based on intended regions/categories from the form
+      const initialFilterData: MajorRecommendationFilter = {
         regions: intendedRegions.length > 0 ? intendedRegions : undefined,
         majorCategories: intendedMajorCategories.length > 0 ? intendedMajorCategories : undefined,
-      });
+      };
+      setInitialFilters(initialFilterData);
 
 
       try {
-        // Option 1: Use AI for initial recommendations (if desired)
-         const aiResult = await generatePersonalizedRecommendations(input);
-         // Assuming aiResult.recommendedMajors is structured similarly to Major[]
-         // You might need to adapt this based on the actual AI output structure.
-         // Ensure the AI output matches the `Major` interface or map it accordingly.
-         // Filter AI results based on subject requirements (client-side for now, AI should handle this ideally)
-         const compatibleMajors = aiResult.recommendedMajors.filter(major =>
-             // Implement logic to check if major.subjectRequirements is compatible with input.selectedSubjects
-             // This requires adding 'subjectRequirements' to the Major interface and data
-             // For now, assume all AI recommendations are compatible or skip filtering
-             true // Placeholder: Assume compatibility for now
-         );
-         setMajors(compatibleMajors);
-         setFilteredMajors(compatibleMajors);
-         setReasoning(aiResult.reasoning);
-
-        // Option 2: Use the mock service directly for now (Commented out as AI is primary)
-        /*
+        // Use the mock service directly
         const filter: MajorRecommendationFilter = {
-          regions: input.intendedRegions,
-          majorCategories: input.intendedMajorCategories,
-          // Other filters will be applied client-side for now
+          regions: initialFilterData.regions,
+          majorCategories: initialFilterData.majorCategories,
+          // Other filters will be applied client-side by RecommendationFilters
         };
+        // Fetch initial list based on form intentions (regions/categories)
         const recommendedMajors = await getMajorRecommendations(filter);
-         // Filter mock results based on subject requirements
+
+        // Optional: Client-side subject compatibility check (can be complex)
          const compatibleMockMajors = recommendedMajors.filter(major =>
-             // Implement logic as above, using mock data's subject requirements
-             true // Placeholder
+             // Placeholder: Implement checkSubjectCompatibility(selectedSubjects, major.subjectRequirements) if needed
+             true // Assuming compatibility or skipping check for now
          );
+
         setMajors(compatibleMockMajors);
-        setFilteredMajors(compatibleMockMajors); // Initially show all recommendations
-        setReasoning("以下是根据您的初步意向和选考科目筛选的专业列表。您可以使用筛选栏进一步细化结果。"); // Updated Mock reasoning
-        */
+        setFilteredMajors(compatibleMockMajors); // Initially show all recommendations based on initial filter
 
       } catch (err) {
         console.error('获取推荐失败:', err);
@@ -112,9 +89,11 @@ function RecommendationsPageContent() {
   }, [searchParams]);
 
   const handleFilterChange = (filters: MajorRecommendationFilter) => {
-      // Client-side filtering based on all filter criteria
-      let tempMajors = [...majors]; // Start with AI/mock recommendations already filtered by subjects
+      // Client-side filtering based on all filter criteria from RecommendationFilters component
+      // Start with the *original* set of majors fetched based on initial form intentions
+      let tempMajors = [...majors];
 
+      // Apply filters from the RecommendationFilters component
       if (filters.regions && filters.regions.length > 0) {
           tempMajors = tempMajors.filter(major => major.region && filters.regions?.includes(major.region));
       }
@@ -148,7 +127,7 @@ function RecommendationsPageContent() {
   const LoadingSkeleton = () => (
     <div className="space-y-4">
       <Skeleton className="h-8 w-1/4" />
-       <Skeleton className="h-20 w-full" /> {/* Placeholder for reasoning */}
+       {/* Removed reasoning skeleton */}
       <Skeleton className="h-10 w-full" />
       <div className="border rounded-lg overflow-hidden">
         <Skeleton className="h-12 w-full" />
@@ -176,15 +155,17 @@ function RecommendationsPageContent() {
         </Alert>
       ) : (
         <>
-          {reasoning && (
-            <Alert className="mb-4 sm:mb-6 bg-secondary border-secondary-foreground/20"> {/* Adjusted margin */}
-              <AlertTitle className="text-secondary-foreground font-semibold">智能分析</AlertTitle>
-              <AlertDescription className="text-secondary-foreground/80">{reasoning}</AlertDescription>
-            </Alert>
-          )}
+          {/* Static Info Alert - Replacing AI Reasoning */}
+          <Alert className="mb-4 sm:mb-6 bg-secondary border-secondary-foreground/20">
+              <AlertTitle className="text-secondary-foreground font-semibold">提示</AlertTitle>
+              <AlertDescription className="text-secondary-foreground/80">
+                以下是根据您在上一页输入的意向筛选出的专业列表。您可以使用下方的筛选栏进一步精确查找。
+              </AlertDescription>
+          </Alert>
+
           <RecommendationFilters
             onFilterChange={handleFilterChange}
-            initialFilters={initialFilters || {}} // Pass initial filters
+            initialFilters={initialFilters || {}} // Pass initial filters derived from form
             className="mb-4 sm:mb-6 p-3 sm:p-4 border rounded-lg shadow-sm bg-card" /* Adjusted margin & padding */
           />
           <RecommendationTable majors={filteredMajors} />
@@ -212,3 +193,4 @@ function RecommendationsLoading() {
       </main>
   )
 }
+
