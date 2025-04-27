@@ -110,7 +110,7 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
        <div className="border rounded-lg overflow-x-auto shadow-sm">
         <Table>
             <TableHeader className="bg-muted/50 text-xs">
-                <TableRow>
+                <TableRow>{/* Start TableRow for Header */}
                     <SortableHeader columnKey="majorName" label="专业名称" className="min-w-[150px] sticky left-0 bg-muted/50 z-10" />
                     <SortableHeader columnKey="majorCode" label="专业代码" className="min-w-[90px]" />
                     <SortableHeader columnKey="university" label="所属院校" className="min-w-[160px]" />
@@ -121,30 +121,30 @@ export function RecommendationTable({ majors }: RecommendationTableProps) {
                     <SortableHeader columnKey="admissionRanking2023" label="23年位次" className="text-right min-w-[70px]" />
                     <SortableHeader columnKey="admissionScore2022" label="22年分数" className="text-right min-w-[70px]" />
                     <SortableHeader columnKey="admissionRanking2022" label="22年位次" className="text-right min-w-[70px]" />
-                </TableRow>
+                </TableRow>{/* End TableRow for Header */}
             </TableHeader>
             <TableBody className="text-xs sm:text-sm">
               {sortedAndFilteredMajors.length > 0 ? (
                 sortedAndFilteredMajors.map((major, index) => (
-                    <TableRow key={`${major.majorCode}-${major.university}-${index}`} className="hover:bg-accent/50">
-                        <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.subjectRequirements ?? '不详'}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2024 ?? '-'}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2024 ?? '-'}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2023 ?? '-'}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2023 ?? '-'}</TableCell> {/* Adjusted padding */}
-                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2022 ?? '-'}</TableCell> {/* Adjusted padding */}
-                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2022 ?? '-'}</TableCell> {/* Adjusted padding */}
-                    </TableRow>
+                    <TableRow key={`${major.majorCode}-${major.university}-${index}`} className="hover:bg-accent/50">{/* Start TableRow for Body */}
+                        <TableCell className="font-medium sticky left-0 bg-background hover:bg-accent/50 z-10 px-2 py-2 sm:px-4 sm:py-4">{major.majorName}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.majorCode}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.university}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="px-2 py-2 sm:px-4 sm:py-4">{major.subjectRequirements ?? '不详'}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2024 ?? '-'}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2024 ?? '-'}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2023 ?? '-'}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2023 ?? '-'}</TableCell>{/* Adjusted padding */}
+                         <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionScore2022 ?? '-'}</TableCell>{/* Adjusted padding */}
+                        <TableCell className="text-right px-2 py-2 sm:px-4 sm:py-4">{major.admissionRanking2022 ?? '-'}</TableCell>{/* Adjusted padding */}
+                    </TableRow>/* End TableRow for Body */
                     ))
                 ) : (
-                    <TableRow>
+                    <TableRow>{/* Start TableRow for Empty State */}
                         <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                             {searchTerm ? '未找到匹配的专业。' : '暂无符合条件的推荐数据。'}
                         </TableCell>
-                    </TableRow>
+                    </TableRow>/* End TableRow for Empty State */
                 )}
             </TableBody>
         </Table>
