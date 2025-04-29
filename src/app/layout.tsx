@@ -24,12 +24,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" className="h-full"> {/* Ensure html takes full height */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`} // Added font-sans
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // Added flex, flex-col, min-h-screen
       >
-        {children}
+        <div className="flex-grow"> {/* Wrapper div to push footer down */}
+            {children}
+        </div>
         <Toaster />
+        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto"> {/* Footer section */}
+          版权所有：跃阶（杭州）教育咨询有限公司
+        </footer>
       </body>
     </html>
   );
