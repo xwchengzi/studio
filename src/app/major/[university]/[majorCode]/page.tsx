@@ -72,11 +72,15 @@ function MajorDetailsPageContent() {
         );
     };
 
-     const AdmissionDataRow = ({ year, score, ranking }: { year: number | string, score: number | null, ranking: number | null }) => (
-        <div className="grid grid-cols-3 gap-2 text-sm py-1 border-b last:border-b-0">
-            <div className="text-muted-foreground">{year}{typeof year === 'number' ? '年' : ''}</div>
-            <div className="text-right">{score ?? '-'}</div>
-            <div className="text-right">{ranking ?? '-'}</div>
+     const AdmissionDataRow = ({ year, score, ranking, isEstimation = false }: { year: number | string, score: number | null, ranking: number | null, isEstimation?: boolean }) => (
+        <div className={cn(
+            "grid grid-cols-3 gap-2 text-sm py-1 border-b last:border-b-0",
+             isEstimation ? "bg-accent/30 py-1.5" : "" // Apply background and slightly more padding for estimation
+        )}>
+            <div className={cn("text-muted-foreground", isEstimation && "font-semibold text-primary/90")}>{year}{typeof year === 'number' ? '年' : ''}</div>
+             {/* Make score '-' for estimation */}
+            <div className={cn("text-right", isEstimation && "font-semibold text-primary/90")}>{isEstimation ? '-' : (score ?? '-')}</div>
+            <div className={cn("text-right", isEstimation && "font-semibold text-primary/90")}>{ranking ?? '-'}</div>
         </div>
     );
 
@@ -247,7 +251,7 @@ function MajorDetailsPageContent() {
                         <AdmissionDataRow year={2018} score={majorDetails.admissionScore2018} ranking={majorDetails.admissionRanking2018} />
                         <AdmissionDataRow year={2017} score={majorDetails.admissionScore2017} ranking={majorDetails.admissionRanking2017} /> */}
                         <Separator className="mt-2 mb-2"/>
-                         <AdmissionDataRow year="2025预估" score={null} ranking={majorDetails.estimatedRanking2025} />
+                         <AdmissionDataRow year="2025预估" score={null} ranking={majorDetails.estimatedRanking2025} isEstimation={true} />
                     </CardContent>
                 </Card>
             </div>
@@ -273,3 +277,5 @@ function MajorDetailsLoading() {
         </main>
     );
 }
+
+    
