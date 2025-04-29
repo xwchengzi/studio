@@ -33,7 +33,7 @@ export default function RootLayout({
         </div>
         <Toaster />
         <footer className="py-4 text-center text-sm text-muted-foreground mt-auto"> {/* Footer section, updated copyright */}
-          版权所有：跃阶教育
+          版权所有：跃阶升学
         </footer>
       </body></html>
   );
