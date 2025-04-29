@@ -72,9 +72,9 @@ function MajorDetailsPageContent() {
         );
     };
 
-     const AdmissionDataRow = ({ year, score, ranking }: { year: number, score: number | null, ranking: number | null }) => (
+     const AdmissionDataRow = ({ year, score, ranking }: { year: number | string, score: number | null, ranking: number | null }) => (
         <div className="grid grid-cols-3 gap-2 text-sm py-1 border-b last:border-b-0">
-            <div className="text-muted-foreground">{year}年</div>
+            <div className="text-muted-foreground">{year}{typeof year === 'number' ? '年' : ''}</div>
             <div className="text-right">{score ?? '-'}</div>
             <div className="text-right">{ranking ?? '-'}</div>
         </div>
@@ -117,11 +117,7 @@ function MajorDetailsPageContent() {
                      <Skeleton className="h-4 w-full" />
                      <Skeleton className="h-4 w-full" />
                      <Skeleton className="h-4 w-full" />
-                     <Skeleton className="h-4 w-full" />
-                     <Skeleton className="h-4 w-full" />
-                     <Skeleton className="h-4 w-full" />
-                     <Skeleton className="h-4 w-full" />
-                     <Skeleton className="h-4 w-full" />
+                     {/* Remove skeleton rows for older years */}
                 </CardContent>
             </Card>
         </div>
@@ -244,17 +240,14 @@ function MajorDetailsPageContent() {
                         <AdmissionDataRow year={2024} score={majorDetails.admissionScore2024} ranking={majorDetails.admissionRanking2024} />
                         <AdmissionDataRow year={2023} score={majorDetails.admissionScore2023} ranking={majorDetails.admissionRanking2023} />
                         <AdmissionDataRow year={2022} score={majorDetails.admissionScore2022} ranking={majorDetails.admissionRanking2022} />
-                        <AdmissionDataRow year={2021} score={majorDetails.admissionScore2021} ranking={majorDetails.admissionRanking2021} />
+                        {/* Remove admission data rows for 2017-2021 */}
+                        {/* <AdmissionDataRow year={2021} score={majorDetails.admissionScore2021} ranking={majorDetails.admissionRanking2021} />
                         <AdmissionDataRow year={2020} score={majorDetails.admissionScore2020} ranking={majorDetails.admissionRanking2020} />
                         <AdmissionDataRow year={2019} score={majorDetails.admissionScore2019} ranking={majorDetails.admissionRanking2019} />
                         <AdmissionDataRow year={2018} score={majorDetails.admissionScore2018} ranking={majorDetails.admissionRanking2018} />
-                        <AdmissionDataRow year={2017} score={majorDetails.admissionScore2017} ranking={majorDetails.admissionRanking2017} />
+                        <AdmissionDataRow year={2017} score={majorDetails.admissionScore2017} ranking={majorDetails.admissionRanking2017} /> */}
                         <Separator className="mt-2 mb-2"/>
-                         <div className="grid grid-cols-3 gap-2 text-sm py-1 font-semibold text-primary">
-                             <div>2025预估</div>
-                             <div className="text-right">-</div>
-                             <div className="text-right">{majorDetails.estimatedRanking2025 ?? '-'}</div>
-                         </div>
+                         <AdmissionDataRow year="2025预估" score={null} ranking={majorDetails.estimatedRanking2025} />
                     </CardContent>
                 </Card>
             </div>
@@ -280,6 +273,3 @@ function MajorDetailsLoading() {
         </main>
     );
 }
-
-
-    
