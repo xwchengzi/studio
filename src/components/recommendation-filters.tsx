@@ -77,7 +77,6 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                : [...selectedValues, option];
            handleMultiSelectChange(filterKey, newValues);
            // Keep popover open after selection
-           // setIsOpen(true); // Avoid explicit control, rely on preventDefault
        };
 
        return (
@@ -109,29 +108,35 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                     >
                        <ScrollArea className="h-48">
                            <div className="p-1">
-                               {options.map((option) => (
+                               {options.map((option) => {
+                                 const isSelected = selectedValues.includes(option);
+                                 return (
                                    <div
                                        key={option}
-                                        // *** Crucial change: Apply preventDefault onMouseDown here ***
+                                       className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
+                                       // *** Crucial change: Apply preventDefault onMouseDown here ***
                                        onMouseDown={(e) => e.preventDefault()}
                                        onClick={() => handleSelect(option)} // Handle selection on click complete
-                                       className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
                                    >
                                        <Checkbox
                                            id={`${filterKey as string}-${option}`}
-                                           checked={selectedValues.includes(option)}
+                                           checked={isSelected}
                                            aria-labelledby={`${filterKey as string}-${option}-label`}
                                            className="h-3.5 w-3.5 pointer-events-none" // Make checkbox non-interactive visually
                                            tabIndex={-1} // Make checkbox non-focusable
                                        />
                                        <label
                                             id={`${filterKey as string}-${option}-label`}
+                                            htmlFor={`${filterKey as string}-${option}`} // Associate label
                                             className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none" // Added select-none
+                                            // Prevent default on label as well
+                                            onMouseDown={(e) => e.preventDefault()}
                                        >
                                            {option}
                                        </label>
                                    </div>
-                               ))}
+                                 );
+                               })}
                            </div>
                        </ScrollArea>
                    </PopoverContent>
@@ -184,4 +189,3 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
     </div>
   );
 }
-

@@ -63,8 +63,8 @@ export function StudentInfoForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: undefined, // Keep undefined for placeholder logic
-      provinceRanking: undefined, // Keep undefined for placeholder logic
+      gaokaoScore: undefined, // Use undefined for controlled component with placeholder
+      provinceRanking: undefined, // Use undefined for controlled component with placeholder
       selectedSubjects: [],
       intendedRegions: [],
       intendedMajorCategories: [],
@@ -136,8 +136,7 @@ export function StudentInfoForm() {
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
-      // Keep popover open after selection by managing state carefully or relying on preventDefault
-      // setIsOpen(true); // Explicitly keeping it open might cause issues, rely on preventDefault
+      // No explicit control of 'isOpen' needed here, relying on preventDefault below
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
@@ -145,7 +144,6 @@ export function StudentInfoForm() {
         e.preventDefault(); // Prevent trigger click/focus behavior
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
-        // No need to manually control isOpen here, Popover should handle it
     }
 
     const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
@@ -180,7 +178,7 @@ export function StudentInfoForm() {
                                 "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent cursor-default", // Base badge styles, make non-interactive visually
                                 badgeType === 'default' && 'bg-secondary text-secondary-foreground hover:bg-secondary/80', // Default (intended)
                                 badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Very Light Blue
-                                badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink
+                                badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink/Red
                               )}
                              >
                                 {value}
@@ -213,44 +211,65 @@ export function StudentInfoForm() {
           <PopoverContent
               className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
               align="start"
-              // Prevent focus from immediately moving back to the trigger, might help keep popover open
+              // Prevent focus from immediately moving back to the trigger, helps keep popover open
               onOpenAutoFocus={(e) => e.preventDefault()}
           >
              <ScrollArea className="h-60">
                 <div className="p-2">
-                  {options.map((option) => (
-                    // This div represents a selectable item in the dropdown
-                    <div
-                      key={option}
-                      // *** Crucial change: Apply preventDefault onMouseDown here ***
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => handleSelect(option)} // Handle selection logic on click complete
-                      className={cn(
-                        "flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer",
-                        (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <Checkbox
-                        id={`${field.name}-${option}`}
-                        checked={selectedValues.includes(option)}
-                        aria-labelledby={`${field.name}-${option}-label`}
-                        disabled={maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)}
-                        tabIndex={-1} // Make checkbox non-focusable, rely on parent div click
-                        className="pointer-events-none" // Ensure checkbox doesn't interfere with div's click
-                      />
-                      <label
-                        id={`${field.name}-${option}-label`}
+                  {options.map((option) => {
+                    const isSelected = selectedValues.includes(option);
+                    const isDisabled = maxSelection && selectedValues.length >= maxSelection && !isSelected;
+                    return (
+                      // This div represents a selectable item container
+                      <div
+                        key={option}
                         className={cn(
-                          "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none",
-                          (maxSelection && selectedValues.length >= maxSelection && !selectedValues.includes(option)) && "cursor-not-allowed"
-                          )}
+                          "flex items-center space-x-2 p-2 rounded-md",
+                          isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent cursor-pointer"
+                        )}
+                        // Important: Prevent default mouse down behavior on the container
+                        // This stops the popover trigger from losing focus and closing
+                        onMouseDown={(e) => {
+                           if (!isDisabled) {
+                             e.preventDefault();
+                           }
+                        }}
+                        // Handle the actual selection logic on click
+                        onClick={() => {
+                           if (!isDisabled) {
+                             handleSelect(option);
+                           }
+                        }}
                       >
-                        {option}
-                      </label>
-                    </div>
-                  ))}
+                        <Checkbox
+                          id={`${field.name}-${option}`}
+                          checked={isSelected}
+                          disabled={isDisabled}
+                          aria-labelledby={`${field.name}-${option}-label`}
+                          tabIndex={-1} // Make checkbox non-focusable, rely on parent div click
+                          className="pointer-events-none" // Ensure checkbox doesn't interfere with div's click
+                        />
+                        <label
+                          id={`${field.name}-${option}-label`}
+                          htmlFor={`${field.name}-${option}`} // Associate label with checkbox for accessibility
+                          className={cn(
+                            "text-sm font-medium leading-none flex-1 select-none", // Added select-none
+                            isDisabled ? "cursor-not-allowed" : "cursor-pointer"
+                          )}
+                          // Prevent default mouse down on label too, just in case
+                          onMouseDown={(e) => {
+                             if (!isDisabled) {
+                               e.preventDefault();
+                             }
+                          }}
+                        >
+                          {option}
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
-            </ScrollArea>
+              </ScrollArea>
           </PopoverContent>
         </Popover>
         <FormMessage />
@@ -270,7 +289,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
-                    <Input type="number" placeholder="请输入高考分数" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="例如: 500" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -283,7 +302,7 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
-                    <Input type="number" placeholder="请输入所在位次" {...field} value={field.value ?? ''} />
+                    <Input type="number" placeholder="例如: 10000" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
