@@ -17,7 +17,6 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-// Badge removed as it's not used for display anymore
 
 // Mock data - replace with actual data fetching or constants
 const REGIONS = ['北京', '上海', '广东', '浙江', '江苏', '四川', '湖北', '陕西', '山东', '河南'];
@@ -77,8 +76,8 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                ? selectedValues.filter((v) => v !== option)
                : [...selectedValues, option];
            handleMultiSelectChange(filterKey, newValues);
-           // Keep popover open for multi-selection
-           setIsOpen(true);
+           // Keep popover open for multi-selection - do not explicitly control open state here
+           // setIsOpen(true); // Removed: Rely on onMouseDown preventDefault
        };
 
        return (
@@ -105,7 +104,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                    <PopoverContent
                         className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
                         align="start"
-                        onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack
+                        // onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack - Removed, let Popover handle focus
                     >
                        <ScrollArea className="h-48">
                            <div className="p-1">
@@ -120,7 +119,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                                            id={`${filterKey as string}-${option}`}
                                            checked={selectedValues.includes(option)}
                                            aria-labelledby={`${filterKey as string}-${option}-label`}
-                                           className="h-3.5 w-3.5"
+                                           className="h-3.5 w-3.5 pointer-events-none" // Make checkbox non-interactive visually
                                            tabIndex={-1} // Make checkbox non-focusable
                                        />
                                        <label
@@ -135,7 +134,6 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                        </ScrollArea>
                    </PopoverContent>
                </Popover>
-               {/* Removed the section displaying selected items as badges */}
            </div>
        );
    };
