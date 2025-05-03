@@ -63,8 +63,8 @@ export function StudentInfoForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      gaokaoScore: undefined, // Use undefined for placeholders to work correctly
-      provinceRanking: undefined, // Use undefined for placeholders to work correctly
+      gaokaoScore: undefined, // Keep undefined for placeholder logic
+      provinceRanking: undefined, // Keep undefined for placeholder logic
       selectedSubjects: [],
       intendedRegions: [],
       intendedMajorCategories: [],
@@ -136,17 +136,16 @@ export function StudentInfoForm() {
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
-      // Do not explicitly close popover here.
-      // onMouseDown preventDefault should keep it open.
-      // It will close automatically on outside click.
+      // Keep popover open after selection by managing state carefully or relying on preventDefault
+      // setIsOpen(true); // Explicitly keeping it open might cause issues, rely on preventDefault
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
-        e.stopPropagation();
-        e.preventDefault();
+        e.stopPropagation(); // Prevent trigger click
+        e.preventDefault(); // Prevent trigger click/focus behavior
         const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         field.onChange(newValues);
-        setIsOpen(true); // Keep open after removing a badge from the trigger itself
+        // No need to manually control isOpen here, Popover should handle it
     }
 
     const handleKeyDownRemove = (e: React.KeyboardEvent, valueToRemove: string) => {
@@ -178,20 +177,25 @@ export function StudentInfoForm() {
                               key={value}
                               // Apply conditional styling directly using cn and Tailwind utilities
                               className={cn(
-                                "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent", // Base badge styles
+                                "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent cursor-default", // Base badge styles, make non-interactive visually
                                 badgeType === 'default' && 'bg-secondary text-secondary-foreground hover:bg-secondary/80', // Default (intended)
                                 badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Very Light Blue
                                 badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink
                               )}
                              >
                                 {value}
+                                {/* Use a span instead of button for the remove icon */}
                                 <span
-                                    role="button"
-                                    tabIndex={0}
-                                    onMouseDown={(e) => { e.preventDefault(); }} // Prevent focus loss on mouse down for the remove icon
+                                    role="button" // Keep role for accessibility
+                                    tabIndex={0} // Make it focusable
+                                    onMouseDown={(e) => {
+                                        // Prevent popover close AND badge click propagation
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
                                     onClick={(e) => removeValue(e, value)} // Handle removal on click
-                                    onKeyDown={(e) => handleKeyDownRemove(e, value)}
-                                    className="rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer" // Adjusted hover for better visibility on custom bg
+                                    onKeyDown={(e) => handleKeyDownRemove(e, value)} // Handle removal with keyboard
+                                    className="rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer" // Adjusted hover
                                     aria-label={`移除 ${value}`}
                                 >
                                     <X className="h-3 w-3" />
@@ -209,7 +213,8 @@ export function StudentInfoForm() {
           <PopoverContent
               className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
               align="start"
-              // Don't prevent default focus behavior here
+              // Prevent focus from immediately moving back to the trigger, might help keep popover open
+              onOpenAutoFocus={(e) => e.preventDefault()}
           >
              <ScrollArea className="h-60">
                 <div className="p-2">
@@ -217,7 +222,8 @@ export function StudentInfoForm() {
                     // This div represents a selectable item in the dropdown
                     <div
                       key={option}
-                      onMouseDown={(e) => e.preventDefault()} // Crucial: Prevents popover closure on item click start
+                      // *** Crucial change: Apply preventDefault onMouseDown here ***
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleSelect(option)} // Handle selection logic on click complete
                       className={cn(
                         "flex items-center space-x-2 p-2 rounded-md hover:bg-accent cursor-pointer",
@@ -252,6 +258,7 @@ export function StudentInfoForm() {
     );
   };
 
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-card p-6 sm:p-8 rounded-lg shadow-md">
@@ -263,7 +270,6 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>高考分数</FormLabel>
                 <FormControl>
-                    {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
                     <Input type="number" placeholder="请输入高考分数" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
@@ -277,7 +283,6 @@ export function StudentInfoForm() {
                 <FormItem>
                 <FormLabel>所在位次</FormLabel>
                 <FormControl>
-                     {/* Input uses value={field.value ?? ''} to handle undefined correctly */}
                     <Input type="number" placeholder="请输入所在位次" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />

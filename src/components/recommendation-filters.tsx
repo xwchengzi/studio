@@ -76,12 +76,12 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                ? selectedValues.filter((v) => v !== option)
                : [...selectedValues, option];
            handleMultiSelectChange(filterKey, newValues);
-           // Keep popover open for multi-selection - do not explicitly control open state here
-           // setIsOpen(true); // Removed: Rely on onMouseDown preventDefault
+           // Keep popover open after selection
+           // setIsOpen(true); // Avoid explicit control, rely on preventDefault
        };
 
        return (
-           <div className="space-y-1 flex flex-col">
+           <div className="space-y-1 flex flex-col items-start"> {/* Ensure items start to align label */}
                <Label htmlFor={filterKey as string} className="text-xs">{label}</Label>
                <Popover open={isOpen} onOpenChange={setIsOpen}>
                     <PopoverTrigger asChild>
@@ -104,14 +104,16 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                    <PopoverContent
                         className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
                         align="start"
-                        // onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus hijack - Removed, let Popover handle focus
+                         // Prevent focus from immediately moving back to the trigger
+                        onOpenAutoFocus={(e) => e.preventDefault()}
                     >
                        <ScrollArea className="h-48">
                            <div className="p-1">
                                {options.map((option) => (
                                    <div
                                        key={option}
-                                       onMouseDown={(e) => e.preventDefault()} // Prevents popover close on item click start
+                                        // *** Crucial change: Apply preventDefault onMouseDown here ***
+                                       onMouseDown={(e) => e.preventDefault()}
                                        onClick={() => handleSelect(option)} // Handle selection on click complete
                                        className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
                                    >
@@ -182,3 +184,4 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
     </div>
   );
 }
+
