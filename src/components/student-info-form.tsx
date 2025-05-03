@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -136,7 +135,7 @@ export function StudentInfoForm() {
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
-      // No explicit control of 'isOpen' needed here, relying on preventDefault below
+      // Keep popover open after selection, rely on preventDefault below
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
@@ -177,7 +176,7 @@ export function StudentInfoForm() {
                               className={cn(
                                 "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent cursor-default", // Base badge styles, make non-interactive visually
                                 badgeType === 'default' && 'bg-secondary text-secondary-foreground hover:bg-secondary/80', // Default (intended)
-                                badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Very Light Blue
+                                badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Lighter Blue
                                 badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink/Red
                               )}
                              >
@@ -227,12 +226,9 @@ export function StudentInfoForm() {
                           "flex items-center space-x-2 p-2 rounded-md",
                           isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-accent cursor-pointer"
                         )}
-                        // Important: Prevent default mouse down behavior on the container
-                        // This stops the popover trigger from losing focus and closing
+                        // *** CRITICAL FIX: Ensure onMouseDown ALWAYS prevents default behavior to keep popover open ***
                         onMouseDown={(e) => {
-                           if (!isDisabled) {
-                             e.preventDefault();
-                           }
+                           e.preventDefault();
                         }}
                         // Handle the actual selection logic on click
                         onClick={() => {
@@ -257,11 +253,8 @@ export function StudentInfoForm() {
                             isDisabled ? "cursor-not-allowed" : "cursor-pointer"
                           )}
                           // Prevent default mouse down on label too, just in case
-                          onMouseDown={(e) => {
-                             if (!isDisabled) {
-                               e.preventDefault();
-                             }
-                          }}
+                           // *** Ensure label also prevents default to avoid closing popover ***
+                           onMouseDown={(e) => e.preventDefault()}
                         >
                           {option}
                         </label>

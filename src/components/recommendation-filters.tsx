@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -76,7 +75,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                ? selectedValues.filter((v) => v !== option)
                : [...selectedValues, option];
            handleMultiSelectChange(filterKey, newValues);
-           // Keep popover open after selection
+            // Keep popover open after selection, rely on preventDefault below
        };
 
        return (
@@ -103,7 +102,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                    <PopoverContent
                         className="w-[--radix-popover-trigger-width] max-w-[calc(100vw-2rem)] p-0"
                         align="start"
-                         // Prevent focus from immediately moving back to the trigger
+                         // Prevent focus from immediately moving back to the trigger, helps keep popover open
                         onOpenAutoFocus={(e) => e.preventDefault()}
                     >
                        <ScrollArea className="h-48">
@@ -114,8 +113,10 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                                    <div
                                        key={option}
                                        className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-accent cursor-pointer"
-                                       // *** Crucial change: Apply preventDefault onMouseDown here ***
-                                       onMouseDown={(e) => e.preventDefault()}
+                                       // *** CRITICAL FIX: Ensure onMouseDown ALWAYS prevents default behavior to keep popover open ***
+                                       onMouseDown={(e) => {
+                                            e.preventDefault();
+                                       }}
                                        onClick={() => handleSelect(option)} // Handle selection on click complete
                                    >
                                        <Checkbox
@@ -130,6 +131,7 @@ export function RecommendationFilters({ onFilterChange, initialFilters, classNam
                                             htmlFor={`${filterKey as string}-${option}`} // Associate label
                                             className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 cursor-pointer select-none" // Added select-none
                                             // Prevent default on label as well
+                                            // *** Ensure label also prevents default to avoid closing popover ***
                                             onMouseDown={(e) => e.preventDefault()}
                                        >
                                            {option}
