@@ -25,8 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     // Ensure html takes full height and remove whitespace inside
-    <html lang="zh-CN" className="h-full"><body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // Added flex, flex-col, min-h-screen
+    <html lang="zh-CN" className="h-full">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // font-sans defined in globals.css now includes system fonts
       >
         <div className="flex-grow"> {/* Wrapper div to push footer down */}
             {children}
@@ -35,6 +36,7 @@ export default function RootLayout({
         <footer className="py-4 text-center text-sm text-muted-foreground mt-auto"> {/* Footer section, updated copyright */}
           版权所有：跃阶升学™
         </footer>
-      </body></html>
+      </body>
+    </html>
   );
 }
