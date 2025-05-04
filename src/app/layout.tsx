@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist } from 'geist/font/sans'; // Correct import path
+import { Geist_Mono } from 'next/font/google'; // Keep using next/font/google for mono for now if GeistMono causes issues
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
+// Correct instantiation using the imported font object
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -13,8 +15,9 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+
 export const metadata: Metadata = {
-  title: '2025高考志愿填报（浙江专版）', // Updated app title
+  title: '2025高考志愿（浙江专版）', // Updated app title
   description: '智能推荐高考志愿', // Updated description
 };
 
