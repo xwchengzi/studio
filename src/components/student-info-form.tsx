@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -135,7 +136,16 @@ export function StudentInfoForm() {
           newValues = [...selectedValues, option];
       }
       field.onChange(newValues);
-      // Keep popover open after selection, rely on preventDefault below
+
+      // Keep popover open after selection if maxSelection is defined and not yet reached,
+      // or if maxSelection is not defined. Close automatically if maxSelection is reached.
+      if (maxSelection && newValues.length >= maxSelection) {
+          // Add a slight delay to allow UI to update before closing
+          setTimeout(() => setIsOpen(false), 100);
+      } else {
+         // Don't close automatically if maxSelection is not set or not reached
+         // setIsOpen(true); // This line is actually not needed as the popover remains open by default
+      }
     };
 
     const removeValue = (e: React.MouseEvent | React.KeyboardEvent, valueToRemove: string) => {
@@ -175,7 +185,7 @@ export function StudentInfoForm() {
                               // Apply conditional styling directly using cn and Tailwind utilities
                               className={cn(
                                 "flex items-center gap-1 pr-1 text-xs sm:text-sm whitespace-nowrap border-transparent cursor-default", // Base badge styles, make non-interactive visually
-                                badgeType === 'default' && 'bg-secondary text-secondary-foreground hover:bg-secondary/80', // Default (intended)
+                                badgeType === 'default' && 'bg-[hsl(140_60%_95%)] text-[hsl(140_80%_30%)] hover:bg-[hsl(140_60%_90%)] dark:bg-[hsl(140_50%_25%)] dark:text-[hsl(140_40%_90%)] dark:hover:bg-[hsl(140_50%_30%)]', // Intended (Green)
                                 badgeType === 'subject' && 'bg-[hsl(210_60%_95%)] text-[hsl(210_80%_30%)] hover:bg-[hsl(210_60%_90%)] dark:bg-[hsl(210_50%_30%)] dark:text-[hsl(210_40%_95%)] dark:hover:bg-[hsl(210_50%_35%)]', // Lighter Blue
                                 badgeType === 'excluded' && 'bg-[hsl(0_80%_95%)] text-[hsl(0_80%_40%)] hover:bg-[hsl(0_80%_90%)] dark:bg-[hsl(0_80%_20%)] dark:text-[hsl(0_80%_90%)] dark:hover:bg-[hsl(0_80%_25%)]' // Light Pink/Red
                               )}
@@ -364,3 +374,4 @@ export function StudentInfoForm() {
     </Form>
   );
 }
+
