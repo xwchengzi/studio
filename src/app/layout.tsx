@@ -5,16 +5,10 @@ import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
-// Correct variable names and instantiation remain the same
-const geistSans = GeistSans({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+// Assign the imported font objects directly. They are not functions to be called.
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 
-const geistMono = GeistMono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   title: '2025高考志愿填报（浙江专版）', // Updated app title
