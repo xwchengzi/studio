@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+// Import Geist fonts from the correct package
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
-const geistSans = Geist({
+// Correct variable names and instantiation remain the same
+const geistSans = GeistSans({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = GeistMono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 });
@@ -27,15 +30,14 @@ export default function RootLayout({
     // Ensure html takes full height and remove whitespace inside
     <html lang="zh-CN" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // font-sans defined in globals.css now includes system fonts
+        // Use the variables from the imported Geist fonts
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        <div className="flex-grow"> {/* Wrapper div to push footer down */}
-            {children}
-        </div>
+        {/* Removed potentially problematic whitespace/comment */}
+        <div className="flex-grow">{children}</div>
         <Toaster />
-        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto"> {/* Footer section, updated copyright */}
-          版权所有：跃阶升学™
-        </footer>
+        {/* Removed potentially problematic whitespace/comment */}
+        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto">版权所有：跃阶升学™</footer>
       </body>
     </html>
   );
