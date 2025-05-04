@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
-// Import Geist fonts from the correct package
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
+// Removed Geist font imports due to errors
+// import { GeistSans } from 'geist/font/sans';
+// import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
-// Correct variable names and instantiation remain the same
-const geistSans = GeistSans({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+// Removed Geist font instantiation as it was causing errors
+// const geistSans = GeistSans({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// });
 
-const geistMono = GeistMono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// const geistMono = GeistMono({
+//   variable: '--font-geist-mono',
+//   subsets: ['latin'],
+// });
 
 export const metadata: Metadata = {
   title: '2025高考志愿填报（浙江专版）', // Updated app title
@@ -30,8 +30,8 @@ export default function RootLayout({
     // Ensure html takes full height and remove whitespace inside
     <html lang="zh-CN" className="h-full">
       <body
-        // Use the variables from the imported Geist fonts
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        // Removed Geist font variables from className
+        className={`antialiased flex flex-col min-h-screen`}
       >
         {/* Removed potentially problematic whitespace/comment */}
         <div className="flex-grow">{children}</div>
