@@ -17,7 +17,7 @@ import { Toaster } from '@/components/ui/toaster';
 // });
 
 export const metadata: Metadata = {
-  title: '2025高考志愿填报（浙江专版）', // Updated app title
+  title: '2025高考志愿（浙江专版）', // Updated app title
   description: '智能推荐高考志愿', // Updated description
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
     // Ensure html takes full height and remove whitespace inside
     <html lang="zh-CN" className="h-full">
       <body
-        // Removed Geist font variables from className
+        // Removed Geist font variables from className and use system font stack from globals.css
         className={`antialiased flex flex-col min-h-screen`}
       >
         {/* Removed potentially problematic whitespace/comment */}
