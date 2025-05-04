@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Ensure html takes full height and remove whitespace inside
+    // Ensure html takes full height and remove inline style
     <html lang="zh-CN" className="h-full">
       <body
         // Use the variables from the imported Geist fonts
