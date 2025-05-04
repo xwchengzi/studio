@@ -1,23 +1,19 @@
 import type { Metadata } from 'next';
-import { Geist } from 'geist/font/sans'; // Correct import path
-import { Geist_Mono } from 'next/font/google'; // Keep using next/font/google for mono for now if GeistMono causes issues
+// Removed Geist font import: import { Geist } from 'geist/font/sans';
+// Removed GeistMono import as well
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
-// Correct instantiation using the imported font object
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// Removed GeistSans instantiation as it's not used and caused errors
+// const geistSans = Geist({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// });
 
 
 export const metadata: Metadata = {
-  title: '2025高考志愿（浙江专版）', // Updated app title
+  title: '2025年高考志愿（浙江专版）', // Updated app title
   description: '智能推荐高考志愿', // Updated description
 };
 
@@ -27,16 +23,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Ensure html takes full height and remove whitespace inside
     <html lang="zh-CN" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // font-sans defined in globals.css now includes system fonts
+        // Removed Geist font variables from className and use system font stack from globals.css
+        className={`antialiased flex flex-col min-h-screen`}
       >
-        <div className="flex-grow"> {/* Wrapper div to push footer down */}
-            {children}
-        </div>
+        {/* Removed potentially problematic whitespace/comment */}
+        <div className="flex-grow">{children}</div>
         <Toaster />
-        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto"> {/* Footer section, updated copyright */}
+        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto">
           版权所有：跃阶升学™
         </footer>
       </body>
