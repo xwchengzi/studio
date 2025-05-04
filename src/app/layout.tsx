@@ -21,18 +21,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Ensure html takes full height and remove inline style
     <html lang="zh-CN" className="h-full">
-      <body
-        // Use the variables from the imported Geist fonts
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-      >
-        {/* Removed potentially problematic whitespace/comment */}
-        <div className="flex-grow">{children}</div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
+        {/* Fixed header */}
+        <header className="fixed top-0 left-0 w-full bg-background z-50 border-b border-border py-4 text-center text-lg font-bold">
+          2025高考志愿填报（浙江专版）
+        </header>
+        {/* Main content container with top padding to accommodate the header */}
+        <main className="flex-grow pt-16">
+          <div className="px-4">
+            {children}
+          </div>
+        </main>
         <Toaster />
-        {/* Removed potentially problematic whitespace/comment */}
-        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto">版权所有：跃阶升学™</footer>
+        <footer className="py-4 text-center text-sm text-muted-foreground mt-auto">
+          版权所有：跃阶升学™
+        </footer>
       </body>
     </html>
   );
-}
