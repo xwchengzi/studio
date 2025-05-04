@@ -1,20 +1,18 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist } from 'next/font/google'; // Removed GeistMono import
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
+// Correct import for Geist Sans font
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// Removed GeistMono instantiation
 
 export const metadata: Metadata = {
-  title: '2025高考志愿填报（浙江专版）', // Updated app title
+  title: '2025高考志愿（浙江专版）', // Updated app title
   description: '智能推荐高考志愿', // Updated description
 };
 
@@ -27,7 +25,7 @@ export default function RootLayout({
     // Ensure html takes full height and remove whitespace inside
     <html lang="zh-CN" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans flex flex-col min-h-screen`} // font-sans defined in globals.css now includes system fonts
+        className={`${geistSans.variable} antialiased font-sans flex flex-col min-h-screen`} // Removed geistMono.variable, font-sans defined in globals.css now includes system fonts
       >
         <div className="flex-grow"> {/* Wrapper div to push footer down */}
             {children}
